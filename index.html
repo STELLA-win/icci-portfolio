@@ -1,1693 +1,602 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Stella Dai - Selected Works 2026">
-  <title>Stella Dai - Selected Works 2026</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Stella Dai - Personal Portfolio for ICCI 2026">
+  <meta name="theme-color" content="#250b13">
+  <title>Stella Dai - Portfolio 2026</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:opsz,ital,wght@9..144,0,500;9..144,0,650;9..144,0,800;9..144,1,500&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Noto+Sans+SC:wght@400;500&display=swap');
 
     /* ===========================================
-       THEME TOKENS
-       Edit these variables to update the whole deck.
+       THEME AND PRESENTATION CHROME
+       The authored slides remain untouched images.
        =========================================== */
     :root {
-      --stage-bg: #1b1014;
-      --slide-bg: #f6f1ec;
-      --paper: #f6f1ec;
-      --paper-white: #fcfaf7;
-      --ink: #242124;
-      --ink-soft: #5f575a;
-      --muted: #81777a;
-      --plum: #74283c;
-      --wine: #4a1827;
-      --night: #2b0d18;
-      --rose: #c79aa3;
-      --dust: #dec4ca;
-      --sage: #9aa397;
-      --rule: rgba(116, 40, 60, 0.24);
-      --rule-dark: rgba(246, 241, 236, 0.28);
-      --font-display: 'Fraunces', 'Noto Serif SC', serif;
-      --font-body: 'DM Sans', 'Noto Sans SC', sans-serif;
+      --stage-bg: #17090e;
+      --slide-bg: #f5eee8;
+      --plum: #7d263f;
+      --wine: #3b0d1b;
+      --paper: #f5eee8;
+      --ui-font: 'Noto Sans SC', sans-serif;
+      --display-font: 'Cormorant Garamond', serif;
       --ease: cubic-bezier(0.16, 1, 0.3, 1);
-      --duration: 560ms;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     /* ===========================================
        FIXED 16:9 STAGE: MANDATORY BASE STYLES
-       Include this ENTIRE file in every presentation.
        Slides are authored at 1920x1080 and scaled as a whole.
        =========================================== */
-
-    /* 1. Lock the browser viewport */
     html,
     body {
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        overflow: hidden;
-        background: var(--stage-bg, #000);
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--stage-bg, #000);
     }
 
-    /* 2. Full-window deck viewport */
     .deck-viewport {
-        position: fixed;
-        inset: 0;
-        overflow: hidden;
-        background: var(--stage-bg, #000);
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(125, 38, 63, 0.18), transparent 54%),
+        var(--stage-bg, #000);
     }
 
-    /* 3. Fixed 16:9 design canvas.
-       JavaScript sets transform: translate(...) scale(...). */
     .deck-stage {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 1920px;
-        height: 1080px;
-        overflow: hidden;
-        transform-origin: 0 0;
-        background: var(--slide-bg, #fff);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      transform-origin: 0 0;
+      background: var(--slide-bg, #fff);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.42);
     }
 
-    /* 4. Slides stack inside the fixed stage.
-       Content must be laid out at 1920x1080, not reflowed per device. */
     .slide {
-        position: absolute;
-        inset: 0;
-        width: 1920px;
-        height: 1080px;
-        overflow: hidden;
-        display: block;
-        visibility: hidden;
-        opacity: 0;
-        pointer-events: none;
-        background: var(--slide-bg, #fff);
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      display: block;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      background: var(--slide-bg, #fff);
+      transition: opacity 420ms ease;
     }
 
     .slide.active,
     .slide.visible {
-        visibility: visible;
-        opacity: 1;
-        pointer-events: auto;
-        z-index: 1;
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 1;
     }
 
-    /* 5. Keep media inside authored slide bounds */
     img,
     video,
     canvas,
     svg {
-        max-width: 100%;
-        max-height: 100%;
+      max-width: 100%;
+      max-height: 100%;
     }
 
-    /* 6. Presentation chrome stays outside the slide design system */
     .deck-controls {
-        position: fixed;
-        left: 50%;
-        bottom: 22px;
-        transform: translateX(-50%);
-        z-index: 1000;
+      position: fixed;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 1000;
     }
 
-    /* 7. Print one fixed-size slide per page */
     @media print {
-        html,
-        body {
-            width: 1920px;
-            height: auto;
-            overflow: visible;
-            background: #fff;
-        }
+      html,
+      body {
+        width: 1920px;
+        height: auto;
+        overflow: visible;
+        background: #fff;
+      }
 
-        .deck-viewport {
-            position: static;
-            overflow: visible;
-            background: #fff;
-        }
+      .deck-viewport {
+        position: static;
+        overflow: visible;
+        background: #fff;
+      }
 
-        .deck-stage {
-            position: static;
-            width: auto;
-            height: auto;
-            transform: none !important;
-            background: none;
-        }
+      .deck-stage {
+        position: static;
+        width: auto;
+        height: auto;
+        transform: none !important;
+        background: none;
+        box-shadow: none;
+      }
 
-        .slide {
-            position: relative;
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            pointer-events: auto !important;
-            width: 1920px;
-            height: 1080px;
-            break-after: page;
-            page-break-after: always;
-        }
+      .slide {
+        position: relative;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        width: 1920px;
+        height: 1080px;
+        break-after: page;
+        page-break-after: always;
+      }
 
-        .slide:last-child {
-            break-after: auto;
-            page-break-after: auto;
-        }
+      .slide:last-child {
+        break-after: auto;
+        page-break-after: auto;
+      }
 
-        .deck-controls {
-            display: none !important;
-        }
+      .deck-controls,
+      .edge-nav,
+      .help-panel,
+      .progress-track {
+        display: none !important;
+      }
     }
 
-    /* 8. Reduced motion */
     @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-            animation-duration: 0.01ms !important;
-            transition-duration: 0.2s !important;
-        }
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+      }
     }
 
     /* ===========================================
-       BASE TYPOGRAPHY AND SLIDE CHROME
+       SOURCE-PAGE REPLICA
+       Each image is a 1920x1080 render from the final PDF.
        =========================================== */
-    body { font-family: var(--font-body); color: var(--ink); }
-    button { font: inherit; }
-    .slide { transition: opacity 360ms ease; }
-    .slide.light {
-      background:
-        linear-gradient(rgba(74, 24, 39, 0.022) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(74, 24, 39, 0.018) 1px, transparent 1px),
-        var(--paper);
-      background-size: 29px 29px, 29px 29px, auto;
-    }
-    .slide.dark {
-      color: var(--paper);
-      background:
-        radial-gradient(circle at 83% 22%, rgba(199, 154, 163, 0.17), transparent 0 24%, transparent 25%),
-        linear-gradient(126deg, var(--night) 0%, var(--wine) 60%, var(--night) 100%);
-    }
-    .slide-shell { position: absolute; inset: 0; padding: 72px 92px 76px; }
-    .topline {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 34px;
-      color: var(--plum);
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-    }
-    .dark .topline { color: rgba(246, 241, 236, 0.72); }
-    .topline::after {
-      content: "";
-      width: 1020px;
-      height: 1px;
-      margin-left: auto;
-      background: var(--rule);
-    }
-    .dark .topline::after { background: var(--rule-dark); }
-    .topline .section-label { margin-right: 36px; white-space: nowrap; }
-    .topline .page-no { margin-left: 28px; white-space: nowrap; }
-    h1, h2, h3 { font-family: var(--font-display); font-weight: 650; }
-    h2 { font-size: 86px; line-height: 0.98; letter-spacing: -0.045em; }
-    h3 { font-size: 34px; line-height: 1.16; letter-spacing: -0.025em; }
-    p { font-size: 25px; line-height: 1.5; }
-    .cn { font-family: 'Noto Serif SC', serif; letter-spacing: 0; }
-    .body-cn { font-family: 'Noto Sans SC', sans-serif; letter-spacing: 0; }
-    .cn-key {
+    .page-image {
       display: block;
-      margin-top: 10px;
-      color: var(--plum);
-      font-family: 'Noto Serif SC', serif;
-      font-size: 0.24em;
-      font-weight: 600;
-      line-height: 1.2;
-      letter-spacing: 0.08em;
+      width: 1920px;
+      height: 1080px;
+      max-width: none;
+      max-height: none;
+      object-fit: fill;
+      user-select: none;
+      -webkit-user-drag: none;
+      transform: scale(1.004);
+      opacity: 0.96;
+      transition:
+        transform 760ms var(--ease),
+        opacity 500ms ease;
+      will-change: transform, opacity;
     }
-    .dark .cn-key { color: var(--rose); }
-    .profile-title .cn-key, .photo-column-head .cn-key, .ai-method-copy .cn-key { font-size: 18px; }
-    .eyebrow {
-      color: var(--plum);
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-    .dark .eyebrow { color: var(--rose); }
-    .dek { color: var(--ink-soft); font-size: 26px; line-height: 1.48; }
-    .dark .dek { color: rgba(246, 241, 236, 0.72); }
-    .micro { color: var(--muted); font-size: 17px; line-height: 1.4; }
-    .dark .micro { color: rgba(246, 241, 236, 0.56); }
-    .rule { height: 1px; background: var(--rule); }
-    .dark .rule { background: var(--rule-dark); }
-    .accent { color: var(--plum); }
-    .dark .accent { color: var(--rose); }
-    .nowrap { white-space: nowrap; }
 
-    /* ===========================================
-       ENTRANCE ANIMATIONS
-       =========================================== */
-    .reveal,
-    .reveal-left,
-    .reveal-scale {
-      opacity: 0;
-      transition: opacity var(--duration) var(--ease), transform var(--duration) var(--ease);
-      transition-delay: var(--delay, 0ms);
+    .slide.visible .page-image {
+      transform: scale(1);
+      opacity: 1;
     }
-    .reveal { transform: translateY(28px); }
-    .reveal-left { transform: translateX(-36px); }
-    .reveal-scale { transform: scale(0.96); }
-    .slide.visible .reveal,
-    .slide.visible .reveal-left,
-    .slide.visible .reveal-scale { opacity: 1; transform: translate(0, 0) scale(1); }
 
-    /* ===========================================
-       ASSET PLACEHOLDERS
-       Replace each block with a local <img> using assets/ paths.
-       =========================================== */
-    .asset-slot {
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(116, 40, 60, 0.32);
-      background:
-        linear-gradient(135deg, rgba(116, 40, 60, 0.06), rgba(199, 154, 163, 0.14)),
-        var(--paper-white);
-      color: var(--plum);
-    }
-    .dark .asset-slot {
-      border-color: rgba(246, 241, 236, 0.35);
-      background:
-        linear-gradient(135deg, rgba(246, 241, 236, 0.06), rgba(199, 154, 163, 0.22)),
-        rgba(43, 13, 24, 0.32);
-      color: var(--paper);
-    }
-    .asset-slot::before {
-      content: "";
+    .interactive-hotspot {
       position: absolute;
-      inset: 14px;
-      border: 1px solid currentColor;
-      opacity: 0.22;
+      z-index: 4;
+      display: block;
+      border: 2px solid transparent;
+      border-radius: 4px;
     }
-    .asset-label {
-      position: relative;
-      z-index: 1;
-      max-width: 80%;
-      text-align: center;
-      font-size: 16px;
-      font-weight: 600;
-      line-height: 1.45;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
+
+    .interactive-hotspot:focus-visible {
+      border-color: rgba(116, 40, 60, 0.72);
+      outline: 3px solid rgba(255, 255, 255, 0.9);
+      outline-offset: 3px;
     }
-    .asset-slot img { width: 100%; height: 100%; object-fit: cover; }
+
+    .video-link-label { left: 890px; top: 205px; width: 135px; height: 62px; }
+    .video-link-frame { left: 545px; top: 292px; width: 480px; height: 330px; }
+    .game-link-label { left: 80px; top: 340px; width: 196px; height: 58px; }
+    .game-link-qr { left: 1735px; top: 925px; width: 126px; height: 120px; }
 
     /* ===========================================
-       COVER SLIDE
-       =========================================== */
-    .cover .paper-field {
-      position: absolute;
-      inset: 0 730px 0 0;
-      background: rgba(252, 250, 247, 0.33);
-    }
-    .cover .plum-field {
-      position: absolute;
-      inset: 0 0 0 1190px;
-      overflow: hidden;
-      background:
-        radial-gradient(circle at 72% 20%, rgba(199, 154, 163, 0.52), transparent 0 15%, transparent 16%),
-        linear-gradient(145deg, var(--plum), var(--wine));
-    }
-    .cover .plum-field::before,
-    .cover .plum-field::after {
-      content: "";
-      position: absolute;
-      border: 1px solid rgba(246, 241, 236, 0.45);
-      border-radius: 50%;
-    }
-    .cover .plum-field::before { width: 620px; height: 620px; right: -180px; top: 160px; }
-    .cover .plum-field::after { width: 280px; height: 280px; left: 90px; bottom: -72px; }
-    .cover-rail { position: absolute; left: 86px; top: 84px; bottom: 84px; width: 2px; background: var(--plum); }
-    .cover-kicker { position: absolute; left: 132px; top: 88px; }
-    .cover-title {
-      position: absolute;
-      left: 130px;
-      top: 250px;
-      width: 1080px;
-      color: var(--ink);
-      font-size: 176px;
-      line-height: 0.78;
-      letter-spacing: -0.055em;
-    }
-    .cover-title em { display: block; margin-left: 198px; color: var(--plum); font-weight: 500; }
-    .cover-subtitle { position: absolute; left: 136px; top: 665px; width: 720px; font-size: 30px; line-height: 1.42; }
-    .cover-subtitle span { color: var(--muted); }
-    .cover-author { position: absolute; left: 136px; bottom: 96px; display: flex; align-items: center; gap: 24px; font-size: 24px; }
-    .cover-author::before { content: ""; width: 88px; height: 2px; background: var(--plum); }
-    .cover-folio { position: absolute; right: 76px; bottom: 76px; color: rgba(246, 241, 236, 0.82); font-size: 18px; font-weight: 500; letter-spacing: 0.2em; writing-mode: vertical-rl; text-transform: uppercase; }
-
-    /* ===========================================
-       PROFILE SLIDE
-       =========================================== */
-    .profile-grid { display: grid; grid-template-columns: 760px 1fr; gap: 118px; margin-top: 86px; }
-    .profile-title { font-size: 104px; line-height: 0.9; letter-spacing: -0.055em; }
-    .profile-title em { color: var(--plum); font-weight: 500; }
-    .profile-intro { width: 610px; margin-top: 48px; color: var(--ink-soft); }
-    .profile-domains { border-top: 1px solid var(--rule); }
-    .domain-row { display: grid; grid-template-columns: 82px 290px 1fr; gap: 24px; padding: 31px 0 29px; border-bottom: 1px solid var(--rule); }
-    .domain-no { color: var(--rose); font: 500 46px/1 var(--font-display); }
-    .domain-row h3 { font-size: 30px; }
-    .domain-row p { color: var(--ink-soft); font-size: 20px; }
-    .profile-footer { position: absolute; left: 92px; right: 92px; bottom: 76px; display: flex; justify-content: space-between; align-items: center; padding-top: 22px; border-top: 1px solid var(--rule); }
-    .profile-footer span { color: var(--muted); font-size: 18px; letter-spacing: 0.05em; }
-
-    /* ===========================================
-       CONTENTS SLIDE
-       =========================================== */
-    .contents-head { margin-top: 66px; display: flex; align-items: end; justify-content: space-between; }
-    .contents-head p { width: 620px; color: var(--ink-soft); }
-    .contents-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 88px; margin-top: 54px; border-top: 1px solid var(--rule); }
-    .contents-group { display: grid; grid-template-columns: 92px 1fr; gap: 28px; padding: 34px 0 30px; border-bottom: 1px solid var(--rule); }
-    .contents-number { color: var(--plum); font: 500 66px/0.9 var(--font-display); }
-    .contents-group h3 { margin-bottom: 12px; font-size: 31px; }
-    .contents-list { display: grid; gap: 8px; color: var(--ink-soft); font-size: 19px; line-height: 1.4; }
-    .contents-list b { color: var(--ink); font-weight: 600; }
-    .contents-group.wide-group { grid-column: 1 / -1; grid-template-columns: 92px 1fr; align-items: start; }
-    .wide-group .contents-list { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-
-    /* ===========================================
-       DARK CINEMATIC CASE SLIDES
-       =========================================== */
-    .cinema-frame { position: absolute; inset: 54px; border: 1px solid rgba(246, 241, 236, 0.28); pointer-events: none; }
-    .cinema-frame::before,
-    .cinema-frame::after { content: ""; position: absolute; top: -1px; width: 180px; height: 5px; background: var(--paper); }
-    .cinema-frame::before { left: -1px; }
-    .cinema-frame::after { right: -1px; }
-    .dark-case-grid { display: grid; grid-template-columns: 720px 1fr; gap: 74px; margin-top: 78px; }
-    .case-title { font-size: 88px; line-height: 0.9; letter-spacing: -0.05em; }
-    .case-title .cn { display: block; margin-top: 18px; color: var(--rose); font-size: 38px; font-weight: 500; }
-    .case-question { margin-top: 42px; color: rgba(246, 241, 236, 0.78); font: 500 32px/1.36 var(--font-display); }
-    .case-meta { margin-top: 50px; display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--rule-dark); }
-    .meta-item { padding: 22px 0; border-bottom: 1px solid var(--rule-dark); }
-    .meta-item:nth-child(odd) { padding-right: 24px; }
-    .meta-label { display: block; margin-bottom: 8px; color: rgba(246, 241, 236, 0.5); font-size: 14px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
-    .meta-value { font-size: 19px; line-height: 1.35; }
-    .hero-still { height: 696px; transform: rotate(1.2deg); border: 10px solid var(--paper-white); }
-    .hero-still::before { inset: 18px; }
-    .cinema-caption { display: flex; justify-content: space-between; margin-top: 16px; color: rgba(246, 241, 236, 0.55); font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; }
-
-    /* ===========================================
-       PROCESS SLIDE
-       =========================================== */
-    .process-head { display: flex; justify-content: space-between; align-items: end; margin-top: 58px; }
-    .process-head p { width: 640px; color: var(--ink-soft); }
-    .process-grid { display: grid; grid-template-columns: 1.04fr 0.96fr; gap: 70px; margin-top: 54px; }
-    .process-steps { border-top: 1px solid var(--rule); }
-    .process-step { display: grid; grid-template-columns: 76px 1fr; gap: 22px; padding: 26px 0; border-bottom: 1px solid var(--rule); }
-    .process-step .step-no { color: var(--rose); font: 500 44px/1 var(--font-display); }
-    .process-step h3 { margin-bottom: 8px; font-size: 28px; }
-    .process-step p { color: var(--ink-soft); font-size: 19px; line-height: 1.45; }
-    .process-visuals { display: grid; grid-template-columns: 1.1fr 0.9fr; grid-template-rows: 360px 210px; gap: 18px; }
-    .process-visuals .wide { grid-column: 1 / -1; }
-    .reflection { position: absolute; left: 92px; right: 92px; bottom: 67px; display: flex; gap: 32px; align-items: center; padding-top: 20px; border-top: 1px solid var(--rule); }
-    .reflection .quote-mark { color: var(--plum); font: 500 56px/0.8 var(--font-display); }
-    .reflection p { font: 500 23px/1.4 var(--font-display); font-style: italic; }
-
-    /* ===========================================
-       RESEARCH CASE SLIDES
-       =========================================== */
-    .research-layout { display: grid; grid-template-columns: 750px 1fr; gap: 92px; margin-top: 62px; }
-    .research-title { font-size: 82px; line-height: 0.95; }
-    .research-question { margin-top: 25px; color: var(--plum); font: 500 30px/1.38 var(--font-display); }
-    .method-line { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 10px; }
-    .method-line span { padding: 10px 14px; border: 1px solid var(--rule); color: var(--ink-soft); font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; }
-    .research-role { margin-top: 30px; padding: 20px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-    .research-role p { margin-top: 7px; color: var(--ink-soft); font-size: 19px; }
-    .findings { margin-top: 34px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px 28px; }
-    .finding { padding-left: 18px; border-left: 3px solid var(--plum); }
-    .finding b { display: block; margin-bottom: 5px; font-size: 18px; }
-    .finding span { color: var(--ink-soft); font-size: 16px; line-height: 1.4; }
-    .research-evidence { display: grid; grid-template-rows: 402px 204px; gap: 18px; }
-    .quote-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-    .quote-box { padding: 26px; border: 1px solid var(--rule); background: rgba(252, 250, 247, 0.56); }
-    .quote-box p { color: var(--ink-soft); font: 500 19px/1.42 var(--font-display); font-style: italic; }
-    .quote-box span { display: block; margin-top: 14px; color: var(--plum); font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
-    .wild-layout { margin-top: 58px; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 72px; }
-    .insight-quote { margin-top: 42px; padding: 30px 0 30px 36px; border-left: 5px solid var(--plum); font: 500 35px/1.25 var(--font-display); }
-    .insight-quote em { color: var(--plum); font-weight: 500; }
-    .evidence-stack { display: grid; grid-template-rows: 370px 236px; gap: 20px; }
-    .method-table { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 38px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-    .method-cell { padding: 23px 18px; border-right: 1px solid var(--rule); }
-    .method-cell:last-child { border-right: 0; }
-    .method-cell b { display: block; margin-bottom: 8px; color: var(--plum); font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; }
-    .method-cell span { color: var(--ink-soft); font-size: 17px; line-height: 1.4; }
-
-    /* ===========================================
-       PHOTOGRAPHY SLIDE
-       =========================================== */
-    .photo-title-block { position: absolute; left: 96px; top: 122px; width: 650px; z-index: 2; }
-    .photo-title-block h2 { margin-top: 18px; color: var(--paper); font-size: 98px; }
-    .photo-title-block h2 .cn { color: var(--rose); font-size: 46px; }
-    .photo-title-block p { margin-top: 28px; width: 520px; color: rgba(246, 241, 236, 0.72); font-size: 23px; }
-    .photo-mosaic { position: absolute; left: 760px; right: 82px; top: 86px; bottom: 86px; display: grid; grid-template-columns: 1.25fr 0.75fr; grid-template-rows: 1.1fr 0.9fr; gap: 18px; transform: rotate(0.8deg); }
-    .photo-mosaic .main { grid-row: 1 / -1; }
-    .photo-mosaic .asset-slot { border: 8px solid var(--paper-white); }
-    .photo-note { position: absolute; left: 96px; bottom: 96px; width: 570px; padding-top: 20px; border-top: 1px solid var(--rule-dark); color: rgba(246, 241, 236, 0.64); font: 500 21px/1.45 var(--font-display); font-style: italic; }
-    .photo-page { position: absolute; left: 96px; top: 76px; z-index: 3; color: rgba(246, 241, 236, 0.74); font-size: 16px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
-
-    /* ===========================================
-       PUBLIC COMMUNICATION SLIDE
-       =========================================== */
-    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 52px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-    .stat { padding: 26px 26px 24px 0; border-right: 1px solid var(--rule); }
-    .stat + .stat { padding-left: 28px; }
-    .stat:last-child { border-right: 0; }
-    .stat strong { display: block; color: var(--plum); font: 650 58px/1 var(--font-display); }
-    .stat span { display: block; margin-top: 10px; color: var(--ink-soft); font-size: 16px; line-height: 1.35; }
-    .media-cases { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; margin-top: 34px; }
-    .media-case { display: grid; grid-template-columns: 330px 1fr; gap: 26px; }
-    .media-case .asset-slot { height: 350px; }
-    .media-copy { padding-top: 8px; }
-    .media-copy h3 { margin: 12px 0 14px; font-size: 29px; }
-    .media-copy p { color: var(--ink-soft); font-size: 18px; line-height: 1.46; }
-    .media-copy .micro { margin-top: 18px; }
-
-    /* ===========================================
-       CROSS-CULTURAL RESEARCH SLIDE
-       =========================================== */
-    .cross-layout { display: grid; grid-template-columns: 760px 1fr; gap: 76px; margin-top: 58px; }
-    .cross-copy h2 { font-size: 78px; }
-    .cross-copy .question { margin-top: 28px; color: var(--plum); font: 500 30px/1.38 var(--font-display); }
-    .cross-copy .dek { margin-top: 28px; }
-    .cross-meta { margin-top: 36px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 24px; }
-    .cross-meta div { padding: 16px 0; border-top: 1px solid var(--rule); }
-    .cross-meta b { display: block; margin-bottom: 6px; color: var(--plum); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; }
-    .cross-meta span { color: var(--ink-soft); font-size: 17px; line-height: 1.35; }
-    .route-board { display: grid; grid-template-rows: 438px 160px; gap: 18px; }
-    .priority-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-    .priority { padding: 22px; border: 1px solid var(--rule); background: rgba(252, 250, 247, 0.5); }
-    .priority b { color: var(--plum); font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; }
-    .priority p { margin-top: 10px; color: var(--ink-soft); font-size: 16px; line-height: 1.36; }
-
-    /* ===========================================
-       BRAND CONCEPT SLIDE
-       =========================================== */
-    .brand-layout { display: grid; grid-template-columns: 660px 1fr; gap: 74px; margin-top: 58px; }
-    .brand-copy h2 { font-size: 82px; }
-    .project-tag { display: inline-block; margin-bottom: 18px; padding: 9px 13px; border: 1px solid var(--plum); color: var(--plum); font-size: 14px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
-    .brand-copy .question { margin-top: 25px; font: 500 31px/1.35 var(--font-display); color: var(--plum); }
-    .brand-copy .dek { margin-top: 24px; }
-    .brand-role { margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--rule); }
-    .brand-board { display: grid; grid-template-columns: 1.2fr 0.8fr; grid-template-rows: 414px 190px; gap: 18px; }
-    .brand-board .hero { grid-row: 1 / -1; }
-    .scent-stories { position: absolute; left: 92px; bottom: 70px; width: 660px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-    .scent { padding: 16px; border-top: 2px solid var(--plum); }
-    .scent b { display: block; color: var(--plum); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; }
-    .scent span { display: block; margin-top: 7px; color: var(--ink-soft); font-size: 15px; line-height: 1.35; }
-
-    /* ===========================================
-       DIGITAL PROTOTYPE SLIDE
-       =========================================== */
-    .prototype-grid { display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 64px; margin-top: 60px; }
-    .prototype-primary { display: grid; grid-template-columns: 610px 1fr; gap: 38px; }
-    .game-frame { height: 620px; border: 10px solid var(--paper-white); transform: rotate(-1deg); }
-    .prototype-copy h2 { font-size: 68px; }
-    .prototype-copy .cn { display: block; margin-top: 12px; color: var(--rose); font-size: 32px; }
-    .prototype-copy .dek { margin-top: 26px; color: rgba(246, 241, 236, 0.72); font-size: 21px; }
-    .prototype-copy .role-list { margin-top: 32px; display: grid; gap: 12px; }
-    .role-list span { padding-bottom: 11px; border-bottom: 1px solid var(--rule-dark); color: rgba(246, 241, 236, 0.74); font-size: 17px; }
-    .prototype-aside { padding-left: 46px; border-left: 1px solid var(--rule-dark); }
-    .prototype-aside h3 { margin-top: 24px; color: var(--paper); font-size: 36px; }
-    .prototype-aside .cn { color: var(--rose); font-size: 24px; }
-    .prototype-aside .asset-slot { height: 286px; margin-top: 24px; }
-    .prototype-aside p { margin-top: 22px; color: rgba(246, 241, 236, 0.68); font-size: 18px; line-height: 1.45; }
-    .disclosure { margin-top: 25px; padding-top: 18px; border-top: 1px solid var(--rule-dark); color: var(--rose); font-size: 14px; line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; }
-
-    /* ===========================================
-       SELECTED WORKS GRID
-       =========================================== */
-    .works-head { display: flex; justify-content: space-between; align-items: end; margin-top: 54px; }
-    .works-head p { width: 600px; color: var(--ink-soft); }
-    .works-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 38px; }
-    .work-item { position: relative; height: 294px; overflow: hidden; border: 1px solid var(--rule); background: rgba(252, 250, 247, 0.55); }
-    .work-item .asset-slot { position: absolute; inset: 0; border: 0; }
-    .work-item .asset-slot::before { inset: 10px; }
-    .work-caption { position: absolute; left: 16px; right: 16px; bottom: 14px; z-index: 2; padding: 13px 15px; background: rgba(252, 250, 247, 0.9); backdrop-filter: blur(8px); }
-    .work-caption b { display: block; font-size: 16px; }
-    .work-caption span { display: block; margin-top: 3px; color: var(--muted); font-size: 13px; }
-    .metric-work { display: flex; flex-direction: column; justify-content: center; padding: 28px; background: var(--plum); color: var(--paper); }
-    .metric-work strong { font: 650 74px/1 var(--font-display); }
-    .metric-work p { margin-top: 12px; font-size: 17px; line-height: 1.4; }
-
-    /* ===========================================
-       FUTURE PRACTICE SLIDE
-       =========================================== */
-    .future-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 74px; margin-top: 64px; }
-    .future-column { padding-top: 24px; border-top: 3px solid var(--plum); }
-    .future-column h3 { margin-bottom: 26px; font-size: 39px; }
-    .future-list { display: grid; gap: 21px; }
-    .future-item { display: grid; grid-template-columns: 34px 1fr; gap: 16px; }
-    .future-item .dot { width: 10px; height: 10px; margin-top: 10px; border-radius: 50%; background: var(--plum); }
-    .future-item p { color: var(--ink-soft); font-size: 20px; line-height: 1.45; }
-    .future-quote { position: absolute; left: 92px; right: 92px; bottom: 70px; padding-top: 22px; border-top: 1px solid var(--rule); color: var(--plum); font: 500 27px/1.4 var(--font-display); font-style: italic; }
-
-    /* ===========================================
-       CLOSING SLIDE
-       =========================================== */
-    .closing .photo-window { position: absolute; inset: 0 0 0 1260px; overflow: hidden; border-left: 1px solid var(--rule-dark); }
-    .closing .photo-window::before { content: ""; position: absolute; inset: 0; background: linear-gradient(145deg, rgba(199,154,163,.36), rgba(43,13,24,.15)), repeating-linear-gradient(0deg, rgba(246,241,236,.08) 0 1px, transparent 1px 22px); }
-    .closing-copy { position: absolute; left: 108px; top: 170px; width: 1070px; }
-    .closing-copy h2 { color: var(--paper); font-size: 100px; line-height: 0.94; }
-    .closing-copy h2 em { color: var(--rose); font-weight: 500; }
-    .closing-copy p { margin-top: 42px; width: 760px; color: rgba(246, 241, 236, 0.68); font-size: 27px; }
-    .closing-contact { position: absolute; left: 108px; bottom: 104px; display: flex; gap: 44px; color: rgba(246, 241, 236, 0.72); font-size: 18px; letter-spacing: 0.06em; }
-    .closing-name { position: absolute; right: 90px; bottom: 82px; color: var(--paper); font: 500 42px/1 var(--font-display); writing-mode: vertical-rl; }
-
-    /* ===========================================
-       SELECTED VIDEO WORKS
-       =========================================== */
-    .video-head { display: flex; justify-content: space-between; align-items: end; margin-top: 56px; }
-    .video-head h2 { width: 980px; }
-    .video-head p { width: 560px; color: var(--ink-soft); }
-    .video-gallery { display: grid; grid-template-columns: 1.35fr 0.825fr 0.825fr; gap: 20px; margin-top: 42px; }
-    .video-card { position: relative; height: 590px; overflow: hidden; border: 1px solid var(--rule); background: var(--paper-white); }
-    .video-card.primary { transform: rotate(-0.6deg); }
-    .video-card .asset-slot { position: absolute; inset: 0 0 118px; border: 0; }
-    .video-caption { position: absolute; left: 0; right: 0; bottom: 0; min-height: 118px; padding: 20px 22px; background: rgba(252, 250, 247, 0.96); }
-    .video-caption b { display: block; margin-bottom: 8px; font: 600 24px/1.1 var(--font-display); }
-    .video-caption span { color: var(--ink-soft); font-size: 15px; line-height: 1.4; }
-
-    /* ===========================================
-       PHOTOGRAPHY COLUMNS
-       =========================================== */
-    .photo-column-head { display: grid; grid-template-columns: 600px 1fr; gap: 110px; margin-top: 52px; align-items: end; }
-    .photo-column-head h2 { font-size: 78px; }
-    .photo-column-head p { width: 620px; color: var(--ink-soft); }
-    .photo-spread { display: grid; grid-template-columns: 1.2fr 0.8fr 0.8fr; grid-template-rows: 1fr 1fr; gap: 18px; height: 500px; margin-top: 24px; }
-    .photo-spread .asset-slot { border: 8px solid var(--paper-white); }
-    .photo-spread .hero { grid-row: 1 / -1; }
-    .photo-spread .asset-slot:last-child { grid-column: 2 / -1; }
-    .photo-spread .tall { grid-row: 1 / -1; }
-    .photo-spread .wide { grid-column: 2 / -1; }
-    .photo-spread.space-layout { grid-template-columns: 1fr 1.35fr 0.65fr; }
-    .photo-spread.event-layout { grid-template-columns: 0.8fr 1.2fr 1fr; }
-    .photo-caption-line { position: absolute; left: 92px; right: 92px; bottom: 42px; display: flex; justify-content: space-between; color: var(--muted); font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; }
-
-    /* ===========================================
-       CURATION PROCESS
-       =========================================== */
-    .curation-layout { display: grid; grid-template-columns: 620px 1fr; gap: 76px; margin-top: 54px; }
-    .curation-copy h2 { font-size: 80px; }
-    .curation-copy .dek { margin-top: 26px; }
-    .curation-steps { margin-top: 34px; border-top: 1px solid var(--rule); }
-    .curation-step { display: grid; grid-template-columns: 62px 1fr; gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--rule); }
-    .curation-step b { color: var(--plum); font: 500 32px/1 var(--font-display); }
-    .curation-step h3 { margin-bottom: 4px; font-size: 23px; }
-    .curation-step p { color: var(--ink-soft); font-size: 16px; line-height: 1.38; }
-    .curation-board { display: grid; grid-template-columns: 1.15fr 0.85fr; grid-template-rows: 360px 238px; gap: 18px; }
-    .curation-board .wide { grid-column: 1 / -1; }
-
-    /* ===========================================
-       WECHAT PRODUCTION AND COVER DESIGN
-       =========================================== */
-    .wechat-layout { display: grid; grid-template-columns: 650px 1fr; gap: 80px; margin-top: 42px; }
-    .wechat-copy h2 { font-size: 70px; }
-    .wechat-copy .dek { margin-top: 18px; font-size: 21px; line-height: 1.35; }
-    .production-chain { margin-top: 24px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 24px; }
-    .chain-item { padding: 10px 0; border-top: 1px solid var(--rule); }
-    .chain-item b { display: block; color: var(--plum); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; }
-    .chain-item span { display: block; margin-top: 6px; color: var(--ink-soft); font-size: 17px; line-height: 1.35; }
-    .chain-item p { margin-top: 6px; color: var(--ink-soft); font-size: 15px; line-height: 1.3; }
-    .wechat-copy > .accent { margin-top: 16px; font-size: 15px; line-height: 1.35; }
-    .wechat-evidence { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-    .wechat-evidence .asset-slot { height: 570px; }
-    .cover-gallery { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 18px; height: 610px; margin-top: 24px; }
-    .cover-item { position: relative; overflow: hidden; border: 1px solid var(--rule); background: var(--paper-white); }
-    .cover-item .asset-slot { position: absolute; inset: 0 0 58px; border: 0; }
-    .cover-item span { position: absolute; left: 16px; right: 16px; bottom: 15px; color: var(--ink-soft); font-size: 14px; }
-    .cover-systems { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 42px; }
-    .cover-system { display: grid; grid-template-columns: 1.1fr 0.9fr; grid-template-rows: 430px 150px; gap: 16px; }
-    .cover-system .hero { grid-row: 1 / -1; }
-    .system-note { padding: 20px; border: 1px solid var(--rule); background: rgba(252,250,247,.62); }
-    .system-note b { color: var(--plum); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; }
-    .system-note p { margin-top: 8px; color: var(--ink-soft); font-size: 16px; line-height: 1.35; }
-
-    /* ===========================================
-       PROJECT PRESENTATION DESIGN
-       =========================================== */
-    .deck-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 42px; }
-    .deck-card { position: relative; height: 610px; border-top: 4px solid var(--plum); }
-    .deck-card .asset-slot { height: 420px; margin-top: 18px; transform: rotate(var(--tilt, 0deg)); }
-    .deck-card h3 { margin-top: 24px; font-size: 28px; }
-    .deck-card p { margin-top: 8px; color: var(--ink-soft); font-size: 17px; line-height: 1.4; }
-    .deck-process-layout { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 70px; margin-top: 54px; }
-    .deck-process-steps { border-top: 1px solid var(--rule); }
-    .deck-process-step { display: grid; grid-template-columns: 76px 1fr; gap: 22px; padding: 24px 0; border-bottom: 1px solid var(--rule); }
-    .deck-process-step b { color: var(--rose); font: 500 42px/1 var(--font-display); }
-    .deck-process-step h3 { font-size: 27px; }
-    .deck-process-step p { margin-top: 6px; color: var(--ink-soft); font-size: 17px; line-height: 1.38; }
-    .before-after { display: grid; grid-template-rows: 1fr 1fr; gap: 18px; height: 620px; }
-
-    /* ===========================================
-       AI PRACTICE MAP, PRODUCT CONCEPT AND METHOD
-       =========================================== */
-    .ai-map-layout { display: grid; grid-template-columns: 650px 1fr; gap: 80px; margin-top: 42px; }
-    .ai-map-copy h2 { font-size: 70px; }
-    .ai-map-copy .dek { margin-top: 18px; font-size: 20px; line-height: 1.35; }
-    .ai-principles { margin-top: 22px; display: grid; gap: 10px; }
-    .ai-principle { padding: 12px 0 12px 22px; border-left: 3px solid var(--plum); }
-    .ai-principle b { display: block; font-size: 18px; }
-    .ai-principle span { display: block; margin-top: 5px; color: var(--ink-soft); font-size: 16px; }
-    .ai-principle p { margin-top: 5px; color: var(--ink-soft); font-size: 15px; line-height: 1.3; }
-    .ai-project-map { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1.05fr 0.95fr; gap: 18px; height: 720px; }
-    .ai-project-map .asset-slot:first-child { grid-row: 1 / -1; }
-    .yunshu-layout { display: grid; grid-template-columns: 700px 1fr; gap: 74px; margin-top: 58px; }
-    .yunshu-copy h2 { font-size: 80px; }
-    .yunshu-copy .dek { margin-top: 26px; }
-    .status-table { margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-    .status-box { padding: 22px; border: 1px solid var(--rule); }
-    .status-box b { color: var(--plum); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; }
-    .status-box p { margin-top: 10px; color: var(--ink-soft); font-size: 16px; line-height: 1.42; }
-    .yunshu-board { display: grid; grid-template-rows: 420px 210px; gap: 18px; }
-    .ai-method-layout { display: grid; grid-template-columns: 610px 1fr; gap: 80px; margin-top: 42px; }
-    .ai-method-copy h2 { font-size: 66px; line-height: .94; }
-    .ai-method-copy .dek { margin-top: 16px; font-size: 18px; line-height: 1.35; }
-    .ai-method-flow { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px; }
-    .ai-method-step { min-height: 135px; padding: 16px; border: 1px solid var(--rule); background: rgba(252,250,247,.54); }
-    .ai-method-step b { color: var(--rose); font: 500 28px/1 var(--font-display); }
-    .ai-method-step h3 { margin-top: 15px; font-size: 26px; }
-    .ai-method-step p { margin-top: 8px; color: var(--ink-soft); font-size: 13px; line-height: 1.3; }
-    .ai-method-copy > .accent { margin-top: 14px; font-size: 14px; line-height: 1.35; }
-
-    /* ===========================================
-       OUTSIDE-STAGE CONTROLS
+       NAVIGATION UI
+       Kept outside the slide so the original layout stays exact.
        =========================================== */
     .deck-controls {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 9px 14px;
-      border: 1px solid rgba(246, 241, 236, 0.18);
+      gap: 13px;
+      padding: 8px 12px;
+      color: rgba(255, 255, 255, 0.84);
+      background: rgba(24, 9, 14, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 999px;
-      background: rgba(27, 16, 20, 0.84);
-      color: var(--paper);
-      backdrop-filter: blur(12px);
-      opacity: 0.14;
+      box-shadow: 0 10px 34px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      font: 500 12px/1 var(--ui-font);
+      letter-spacing: 0.08em;
+      opacity: 0;
       transition: opacity 220ms ease;
     }
-    .deck-controls:hover { opacity: 1; }
-    .deck-controls button { width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
-    .deck-controls button:hover { background: rgba(246, 241, 236, 0.12); }
-    .counter { min-width: 58px; text-align: center; font-size: 12px; letter-spacing: 0.08em; }
-    .progress-track { width: 110px; height: 2px; background: rgba(246, 241, 236, 0.2); }
-    .progress-bar { width: 0; height: 100%; background: var(--rose); transition: width 280ms ease; }
-    .edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
-    .edit-toggle {
-      position: fixed;
-      top: 18px;
-      left: 18px;
-      width: 42px;
-      height: 42px;
-      z-index: 10001;
-      border: 1px solid rgba(246, 241, 236, 0.22);
+
+    body:hover .deck-controls,
+    .deck-controls:focus-within {
+      opacity: 1;
+    }
+
+    .control-button {
+      width: 30px;
+      height: 30px;
+      border: 0;
       border-radius: 50%;
-      background: rgba(27, 16, 20, 0.88);
-      color: var(--paper);
-      opacity: 0;
-      pointer-events: none;
+      color: inherit;
+      background: transparent;
       cursor: pointer;
-      transition: opacity 0.3s ease;
+      font: 500 18px/1 var(--display-font);
+      transition: background 180ms ease, color 180ms ease;
     }
-    .edit-toggle.show,
-    .edit-toggle.active { opacity: 1; pointer-events: auto; }
-    .edit-panel {
+
+    .control-button:hover,
+    .control-button:focus-visible {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.12);
+      outline: none;
+    }
+
+    .counter {
+      min-width: 58px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-track {
       position: fixed;
-      top: 72px;
-      left: 18px;
-      z-index: 10001;
-      display: none;
-      gap: 8px;
-      padding: 10px;
-      border: 1px solid rgba(246, 241, 236, 0.18);
-      border-radius: 10px;
-      background: rgba(27, 16, 20, 0.92);
-      backdrop-filter: blur(12px);
+      inset: auto 0 0;
+      height: 3px;
+      z-index: 1100;
+      background: rgba(255, 255, 255, 0.08);
     }
-    .editing .edit-panel { display: flex; }
-    .edit-panel button { padding: 8px 11px; border: 1px solid rgba(246, 241, 236, 0.2); border-radius: 7px; background: transparent; color: var(--paper); font-size: 12px; cursor: pointer; }
-    .editing [data-editable] { outline: 2px dashed rgba(199, 154, 163, 0.75); outline-offset: 5px; cursor: text; }
-    .overview {
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #b66b80, #f1d8df);
+      transition: width 420ms var(--ease);
+    }
+
+    .edge-nav {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      z-index: 900;
+      width: 12vw;
+      max-width: 180px;
+      border: 0;
+      color: transparent;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .edge-nav.prev { left: 0; }
+    .edge-nav.next { right: 0; }
+
+    .edge-nav::after {
+      position: absolute;
+      top: 50%;
+      color: rgba(255, 255, 255, 0.72);
+      font: 500 34px/1 var(--display-font);
+      opacity: 0;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .edge-nav.prev::after {
+      content: '\2039';
+      left: 26px;
+      transform: translate(8px, -50%);
+    }
+
+    .edge-nav.next::after {
+      content: '\203A';
+      right: 26px;
+      transform: translate(-8px, -50%);
+    }
+
+    .edge-nav:hover::after,
+    .edge-nav:focus-visible::after {
+      opacity: 1;
+      transform: translate(0, -50%);
+    }
+
+    .edge-nav:focus-visible { outline: none; }
+
+    /* ===========================================
+       HELP PANEL
+       =========================================== */
+    .help-panel {
+      position: fixed;
+      right: 22px;
+      top: 22px;
+      z-index: 1200;
+      width: 270px;
+      padding: 18px 20px;
+      color: rgba(255, 255, 255, 0.84);
+      background: rgba(24, 9, 14, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      font: 400 13px/1.8 var(--ui-font);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+      transition: opacity 200ms ease, transform 240ms var(--ease), visibility 200ms;
+    }
+
+    .help-panel.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .help-panel strong {
+      display: block;
+      margin-bottom: 7px;
+      color: #fff;
+      font: 600 19px/1.2 var(--display-font);
+    }
+
+    .loading {
       position: fixed;
       inset: 0;
-      z-index: 12000;
-      display: none;
-      overflow: auto;
-      padding: 72px;
-      background: rgba(22, 11, 15, 0.96);
-      color: var(--paper);
-      font-family: var(--font-body);
+      z-index: 2000;
+      display: grid;
+      place-items: center;
+      color: rgba(255, 255, 255, 0.76);
+      background: var(--stage-bg);
+      font: 500 13px/1 var(--ui-font);
+      letter-spacing: 0.14em;
+      transition: opacity 400ms ease, visibility 400ms;
     }
-    .overview.open { display: block; }
-    .overview h2 { margin-bottom: 34px; font-size: 48px; }
-    .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-    .overview-item { min-height: 130px; padding: 20px; border: 1px solid rgba(246, 241, 236, 0.18); background: rgba(246, 241, 236, 0.04); color: var(--paper); text-align: left; cursor: pointer; }
-    .overview-item:hover { border-color: var(--rose); background: rgba(199, 154, 163, 0.1); }
-    .overview-item span { display: block; color: var(--rose); font-size: 12px; letter-spacing: 0.14em; }
-    .overview-item b { display: block; margin-top: 14px; font: 500 22px/1.25 var(--font-display); }
-    @media print {
-      .edit-hotzone, .edit-toggle, .edit-panel, .overview { display: none !important; }
+
+    .loading.done {
+      opacity: 0;
+      visibility: hidden;
     }
   </style>
 </head>
 <body>
+  <div class="loading" id="loading" aria-live="polite">LOADING PORTFOLIO</div>
+
   <div class="deck-viewport">
-    <main class="deck-stage" id="deckStage" aria-label="Stella Dai selected works portfolio">
-
-      <!-- Slide 01 assets: Replace CSS field with one original urban photograph if available.
-           Crop: landscape 3:2 with negative space on the left. Preferred: 2400x1600 or larger. -->
-      <section class="slide light cover active" data-title="Selected Works">
-        <div class="paper-field"></div>
-        <div class="plum-field"></div>
-        <div class="cover-rail"></div>
-        <div class="cover-kicker eyebrow reveal" data-editable>Personal Portfolio · 个人作品集 · 2026</div>
-        <h1 class="cover-title reveal" style="--delay: 90ms" data-editable>Selected <em>Works</em></h1>
-        <p class="cover-subtitle reveal" style="--delay: 180ms" data-editable>Culture in Everyday Life<br><span>Research, Visual Storytelling and Digital Practice</span></p>
-        <div class="cover-author reveal" style="--delay: 270ms" data-editable>Stella Dai</div>
-        <div class="cover-folio" data-editable>Portfolio for ICCI</div>
+    <main class="deck-stage" id="deckStage" aria-label="Stella Dai 作品集">
+      <section class="slide active" aria-label="封面">
+        <img class="page-image" src="assets/slides/slide-01.png" alt="Stella's Portfolio 封面" draggable="false">
       </section>
-
-      <!-- Slide 02 assets: Optional portrait or observational self-photo.
-           Crop: vertical 4:5. Preferred: 1600x2000. Current layout works without it. -->
-      <section class="slide light" data-title="Profile">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Profile</span><span class="page-no">02</span></div>
-          <div class="profile-grid">
-            <div>
-              <div class="eyebrow reveal" data-editable>Between disciplines</div>
-              <h2 class="profile-title reveal" style="--delay: 80ms" data-editable>Between<br><em>Languages,</em><br>Markets and Images<span class="cn-key">跨语言、市场与影像</span></h2>
-              <p class="profile-intro reveal" style="--delay: 160ms" data-editable>I work across cultural contexts, consumer research and visual storytelling. Each practice gives me a different way to notice how people understand, choose and remember.</p>
-            </div>
-            <div class="profile-domains reveal" style="--delay: 160ms">
-              <div class="domain-row">
-                <div class="domain-no">01</div>
-                <h3 data-editable>Languages<br>& Culture</h3>
-                <p data-editable>Russian language training, cross-cultural communication and an interest in how meaning changes across contexts.</p>
-              </div>
-              <div class="domain-row">
-                <div class="domain-no">02</div>
-                <h3 data-editable>Research<br>& Markets</h3>
-                <p data-editable>User research, consumer insight and quantitative methods that turn intuition into grounded understanding.</p>
-              </div>
-              <div class="domain-row">
-                <div class="domain-no">03</div>
-                <h3 data-editable>Images<br>& Content</h3>
-                <p data-editable>Photography, editorial storytelling and digital experiments that make an idea visible and testable.</p>
-              </div>
-            </div>
-          </div>
-          <div class="profile-footer reveal" style="--delay: 260ms">
-            <span data-editable>UIBE · International Economics & Trade × Russian</span>
-            <span data-editable>Kantar · UIBE Media Center · Xiaomi International Internet Business</span>
-          </div>
-        </div>
+      <section class="slide" aria-label="个人介绍">
+        <img class="page-image" src="assets/slides/slide-02.png" alt="About Stella Dai" draggable="false">
       </section>
-
-      <!-- Slide 03 assets: Optional one thumbnail per section. Current typographic map is complete without images. -->
-      <section class="slide light" data-title="Selected Projects">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Contents</span><span class="page-no">03</span></div>
-          <div class="contents-head">
-            <h2 class="reveal" data-editable>Selected Projects<span class="cn-key">项目目录</span></h2>
-            <p class="reveal" style="--delay: 90ms" data-editable>A portfolio organised by questions and projects, not by software or isolated skills.</p>
-          </div>
-          <div class="contents-grid reveal" style="--delay: 160ms">
-            <div class="contents-group">
-              <div class="contents-number">01</div>
-              <div><h3 data-editable>Moving Image & Cultural Translation</h3><div class="contents-list" data-editable><span><b>The Axis Reflecting China</b> · Short Video</span><span><b>Selected Video Works</b> · Scripts, Frames & Delivery</span></div></div>
-            </div>
-            <div class="contents-group">
-              <div class="contents-number">02</div>
-              <div><h3 data-editable>Research in Everyday Life</h3><div class="contents-list" data-editable><span><b>Trust without a Storefront</b> · Field Research</span><span><b>Beyond "Wild Consumption"</b> · Consumer Insight</span></div></div>
-            </div>
-            <div class="contents-group">
-              <div class="contents-number">03</div>
-              <div><h3 data-editable>Photography & Curation</h3><div class="contents-list" data-editable><span><b>Being Present｜在场</b> · Photography</span><span>People · Spaces · Events · Exhibition Curation</span></div></div>
-            </div>
-            <div class="contents-group">
-              <div class="contents-number">04</div>
-              <div><h3 data-editable>Editorial Design & Public Communication</h3><div class="contents-list" data-editable><span>WeChat Production · Posters & Post Covers</span><span>Editorial Cover Systems · Project Presentation Design</span></div></div>
-            </div>
-            <div class="contents-group wide-group">
-              <div class="contents-number">05</div>
-              <div><h3 data-editable>Cross-cultural, Brand & AI Practice</h3><div class="contents-list" data-editable><span>Sino-Russian Business Tourism · Fengsong Muying</span><span>Moldy Tofu Ninja · Zhiliang Yunshu · Working with AI</span></div></div>
-            </div>
-          </div>
-        </div>
+      <section class="slide" aria-label="创意项目 风颂牧影">
+        <img class="page-image" src="assets/slides/slide-03.png" alt="Fengsong Muying 风颂牧影" draggable="false">
       </section>
-
-      <!-- Slide 04 assets: 1 hero video still, 2 optional supporting frames, award proof, QR code.
-           Hero crop: vertical-friendly 4:5 or landscape frame cropped centrally. Preferred: 2000px wide. -->
-      <section class="slide dark" data-title="The Axis Reflecting China">
-        <div class="cinema-frame"></div>
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">01 · Cultural Translation</span><span class="page-no">04</span></div>
-          <div class="dark-case-grid">
-            <div>
-              <div class="eyebrow reveal" data-editable>Short Video · Cross-cultural Storytelling</div>
-              <h2 class="case-title reveal" style="--delay: 90ms" data-editable>The Axis<br>Reflecting China<span class="cn">北京中轴线</span></h2>
-              <p class="case-question reveal" style="--delay: 160ms" data-editable>How can centuries of urban history enter a short video without becoming a list of landmarks?</p>
-              <div class="case-meta reveal" style="--delay: 230ms">
-                <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value" data-editable>Short video</span></div>
-                <div class="meta-item"><span class="meta-label">Team</span><span class="meta-value" data-editable>5 members</span></div>
-                <div class="meta-item"><span class="meta-label">My Role</span><span class="meta-value accent" data-editable>[ROLE TO CONFIRM]</span></div>
-                <div class="meta-item"><span class="meta-label">Recognition</span><span class="meta-value" data-editable>Provincial Silver Award</span></div>
-              </div>
-            </div>
-            <div class="reveal-scale" style="--delay: 150ms">
-              <div class="asset-slot hero-still"><span class="asset-label">[ASSET NEEDED]<br>Hero video still / poster frame</span></div>
-              <div class="cinema-caption"><span data-editable>Video QR code · [NEEDED]</span><span data-editable>Year · [VERIFY]</span></div>
-            </div>
-          </div>
-        </div>
+      <section class="slide" aria-label="创作作品">
+        <img class="page-image" src="assets/slides/slide-04.png" alt="关于创作" draggable="false">
+        <a class="interactive-hotspot video-link-label" href="https://www.bilibili.com/video/BV12eapzgEvK/" target="_blank" rel="noopener" aria-label="在 B 站观看中轴映华夏视频"></a>
+        <a class="interactive-hotspot video-link-frame" href="https://www.bilibili.com/video/BV12eapzgEvK/" target="_blank" rel="noopener" aria-label="播放中轴映华夏视频"></a>
       </section>
-
-      <!-- Slide 05 assets: Script excerpt, storyboard, shooting photo, bilingual subtitle comparison.
-           Crops: script 4:3, storyboard 4:3, subtitle strip 16:5. Preferred: 1600px each. -->
-      <section class="slide light" data-title="From Knowledge to Narrative">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">The Axis Reflecting China · Process</span><span class="page-no">05</span></div>
-          <div class="process-head">
-            <h2 class="reveal" data-editable>From Knowledge<br>to Narrative<span class="cn-key">从知识到叙事</span></h2>
-            <p class="reveal" style="--delay: 90ms" data-editable>The central challenge was not collecting more historical facts, but deciding how viewers should enter the story.</p>
-          </div>
-          <div class="process-grid">
-            <div class="process-steps reveal" style="--delay: 140ms">
-              <div class="process-step"><div class="step-no">01</div><div><h3 data-editable>Finding the Narrative Line</h3><p data-editable>Organise architecture and spatial order around one coherent viewing path rather than a sequence of attractions.</p></div></div>
-              <div class="process-step"><div class="step-no">02</div><div><h3 data-editable>Choosing What to Leave Out</h3><p data-editable>Reduce information without flattening complexity; each fact must support the visual rhythm and central question.</p></div></div>
-              <div class="process-step"><div class="step-no">03</div><div><h3 data-editable>Reframing for Another Audience</h3><p data-editable>Rebuild context, subtitles and image order for English-speaking viewers instead of translating sentence by sentence.</p></div></div>
-            </div>
-            <div class="process-visuals reveal" style="--delay: 210ms">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Script excerpt</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Storyboard / shooting plan</span></div>
-              <div class="asset-slot wide"><span class="asset-label">[ASSET NEEDED]<br>Bilingual subtitle or edit comparison</span></div>
-            </div>
-          </div>
-          <div class="reflection reveal" style="--delay: 280ms"><div class="quote-mark">“</div><p data-editable>Cultural communication is not simply the compression of knowledge. It is the design of an entry point.</p></div>
-        </div>
+      <section class="slide" aria-label="新媒体实践">
+        <img class="page-image" src="assets/slides/slide-05.png" alt="关于新媒体" draggable="false">
       </section>
-
-      <!-- Slide 06 assets: One still or poster frame for each video, plus QR/link, role, year and format.
-           Crops: main card 16:9; supporting cards 4:3 or 16:9. Preferred: 1800px wide. -->
-      <section class="slide light" data-title="Selected Video Works">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Moving Image · Selected Work</span><span class="page-no">06</span></div>
-          <div class="video-head">
-            <div>
-              <div class="eyebrow reveal" data-editable>Video · Script · Editing · Delivery</div>
-              <h2 class="reveal" style="--delay: 80ms" data-editable>Moving Images,<br>Multiple Entry Points<span class="cn-key">视频作品</span></h2>
-            </div>
-            <p class="reveal" style="--delay: 130ms" data-editable>Across short video, documentary-style recording and promotional content, I work from audience entry point to script, image rhythm and final delivery.</p>
-          </div>
-          <div class="video-gallery reveal" style="--delay: 190ms">
-            <article class="video-card">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>The Axis Reflecting China · still / poster</span></div>
-              <div class="video-caption"><div><b data-editable>The Axis Reflecting China</b><span data-editable>Cross-cultural short video</span></div><span data-editable>[YEAR · ROLE · FORMAT TO CONFIRM]</span></div>
-            </article>
-            <article class="video-card">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Video project 02 · still / poster</span></div>
-              <div class="video-caption"><div><b data-editable>[VIDEO PROJECT 02]</b><span data-editable>[ONE-LINE CONTEXT]</span></div><span data-editable>[YEAR · ROLE · FORMAT TO CONFIRM]</span></div>
-            </article>
-            <article class="video-card">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Video project 03 · still / poster</span></div>
-              <div class="video-caption"><div><b data-editable>[VIDEO PROJECT 03]</b><span data-editable>[ONE-LINE CONTEXT]</span></div><span data-editable>[YEAR · ROLE · FORMAT TO CONFIRM]</span></div>
-            </article>
-          </div>
-        </div>
+      <section class="slide" aria-label="策展项目 在场">
+        <img class="page-image" src="assets/slides/slide-06.png" alt="关于策展 在场" draggable="false">
       </section>
-
-      <!-- Slide 07 assets: Group-chat scene, research flow, one chart, two anonymous interview excerpts.
-           Main evidence crop: 4:3. Remove names and sensitive chat details. -->
-      <section class="slide light" data-title="Trust without a Storefront">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">02 · Research in Everyday Life</span><span class="page-no">07</span></div>
-          <div class="research-layout">
-            <div>
-              <div class="eyebrow reveal" data-editable>Field Research · Consumer Trust</div>
-              <h2 class="research-title reveal" style="--delay: 80ms" data-editable>Trust without<br>a Storefront<span class="cn-key">无门店信任研究</span></h2>
-              <p class="research-question reveal" style="--delay: 140ms" data-editable>Why do students buy food from a small stall inside a group chat?</p>
-              <div class="method-line reveal" style="--delay: 190ms"><span data-editable>Participatory observation</span><span data-editable>Semi-structured interviews</span><span data-editable>122 valid questionnaires</span></div>
-              <div class="research-role reveal" style="--delay: 240ms"><div class="eyebrow">My Contribution</div><p class="accent" data-editable>[ROLE TO CONFIRM: research question / interview / questionnaire / analysis / writing]</p></div>
-              <div class="findings reveal" style="--delay: 290ms">
-                <div class="finding"><b data-editable>Transparent communication</b><span data-editable>Visible updates reduce uncertainty.</span></div>
-                <div class="finding"><b data-editable>Familiar interaction</b><span data-editable>Repeated contact creates social proximity.</span></div>
-                <div class="finding"><b data-editable>Peer endorsement</b><span data-editable>Recommendations become informal proof.</span></div>
-                <div class="finding"><b data-editable>Low-risk trial</b><span data-editable>Small purchases lower the cost of trust.</span></div>
-              </div>
-            </div>
-            <div class="research-evidence reveal" style="--delay: 180ms">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Research framework + key chart</span></div>
-              <div class="quote-strip">
-                <div class="quote-box"><p data-editable>"[ANONYMISED INTERVIEW QUOTE]"</p><span>Participant A</span></div>
-                <div class="quote-box"><p data-editable>"[ANONYMISED INTERVIEW QUOTE]"</p><span>Participant B</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <section class="slide" aria-label="摄影 静物与食物">
+        <img class="page-image" src="assets/slides/slide-07.png" alt="关于摄影 Before the First Bite" draggable="false">
       </section>
-
-      <!-- Slide 08 assets: Survey cover, factor analysis result, K-means segment chart, one user profile.
-           Main chart crop: 16:10; profile crop: vertical 4:5. Preferred: vector or 1800px wide. -->
-      <section class="slide light" data-title="Beyond Wild Consumption">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Consumer Research</span><span class="page-no">08</span></div>
-          <div class="wild-layout">
-            <div>
-              <div class="eyebrow reveal" data-editable>Survey · Segmentation · Consumer Insight</div>
-              <h2 class="reveal" style="--delay: 80ms" data-editable>Beyond<br>"Wild Consumption"<span class="cn-key">“野性消费”研究</span></h2>
-              <p class="dek reveal" style="--delay: 140ms; margin-top: 24px" data-editable>Public emotion can rapidly bring attention to a brand. The research asked what remains after the emotional moment passes.</p>
-              <div class="method-table reveal" style="--delay: 190ms">
-                <div class="method-cell"><b>01 · Survey</b><span data-editable>Questionnaire design and response collection</span></div>
-                <div class="method-cell"><b>02 · Analysis</b><span data-editable>Factor analysis and K-means clustering</span></div>
-                <div class="method-cell"><b>03 · Profiles</b><span data-editable>Consumer segments and behavioural interpretation</span></div>
-              </div>
-              <div class="insight-quote reveal" style="--delay: 260ms" data-editable>Emotional identification may encourage the first purchase, while long-term retention returns to <em>quality, price and lived experience.</em></div>
-            </div>
-            <div class="evidence-stack reveal" style="--delay: 180ms">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Segment chart / factor analysis</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Consumer profile + conclusion evidence</span></div>
-            </div>
-          </div>
-        </div>
+      <section class="slide" aria-label="摄影 纪实与现场">
+        <img class="page-image" src="assets/slides/slide-08.png" alt="关于摄影 Being Present" draggable="false">
       </section>
-
-      <!-- Slide 09 assets: Exhibition key visual, 4-6 selected photographs, one sequencing/layout photo.
-           Main photo crop: vertical 4:5; supporting photos: landscape or square. Use original high-res files. -->
-      <section class="slide dark" data-title="Being Present">
-        <div class="cinema-frame"></div>
-        <div class="photo-title-block">
-          <div class="eyebrow reveal" data-editable>Photography · Editorial Curation</div>
-          <h2 class="reveal" style="--delay: 90ms" data-editable>Being Present<br><span class="cn">在场</span></h2>
-          <p class="reveal" style="--delay: 160ms" data-editable>From photographing an event to constructing a shared memory through selection, sequence and editorial rhythm.</p>
-        </div>
-        <div class="photo-mosaic reveal-scale" style="--delay: 140ms">
-          <div class="asset-slot main"><span class="asset-label">[ASSET NEEDED]<br>Main exhibition photograph</span></div>
-          <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Selected photograph 02</span></div>
-          <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Exhibition / layout process</span></div>
-        </div>
-        <p class="photo-note reveal" style="--delay: 250ms" data-editable>Selecting an image means deciding which details are able to carry the memory of a larger event.</p>
-        <div class="photo-page">09 · Photography & Curation</div>
+      <section class="slide" aria-label="摄影 人像">
+        <img class="page-image" src="assets/slides/slide-09.png" alt="关于摄影 Before We Are Defined" draggable="false">
       </section>
-
-      <!-- Slide 10 assets: Four portraits or people-centred documentary photographs.
-           Crops: one vertical 4:5 hero, two square or 3:2 supporting frames. Use original high-res files. -->
-      <section class="slide light" data-title="Photography: People">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Photography Column 01</span><span class="page-no">10</span></div>
-          <div class="photo-column-head">
-            <div><div class="eyebrow reveal" data-editable>People & Proximity</div><h2 class="reveal" style="--delay:80ms" data-editable>Learning to Stay<br>Close Enough<span class="cn-key">摄影：人物与关系</span></h2></div>
-            <p class="reveal" style="--delay:130ms" data-editable>These photographs begin with proximity: waiting long enough for gesture, expression and relationship to become more important than spectacle.</p>
-          </div>
-          <div class="photo-spread tall reveal" style="--delay:190ms">
-            <div class="asset-slot hero"><span class="asset-label">[ASSET NEEDED]<br>People · hero photograph</span></div>
-            <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>People · photograph 02</span></div>
-            <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>People · photograph 03</span></div>
-            <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>People · photograph 04</span></div>
-          </div>
-          <div class="photo-caption-line"><span data-editable>[SERIES / LOCATION / YEAR]</span><span data-editable>[ROLE: PHOTOGRAPHY · EDITING]</span></div>
-        </div>
+      <section class="slide" aria-label="文创 校园产品">
+        <img class="page-image" src="assets/slides/slide-10.png" alt="关于文创 Campus, Made Tangible" draggable="false">
       </section>
-
-      <!-- Slide 11 assets: Four photographs of architecture, transit, campus or everyday spatial details.
-           Crops: one landscape 16:10 hero, three vertical/square details. Preferred: 2000px wide. -->
-      <section class="slide light" data-title="Photography: Spaces and Everyday Life">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Photography Column 02</span><span class="page-no">11</span></div>
-          <div class="photo-column-head">
-            <div><div class="eyebrow reveal" data-editable>Spaces & Everyday Life</div><h2 class="reveal" style="--delay:80ms" data-editable>Reading Space<br>through Traces<span class="cn-key">摄影：空间与日常</span></h2></div>
-            <p class="reveal" style="--delay:130ms" data-editable>Architecture becomes meaningful through use: a shadow, a route, a temporary object or a person passing through the frame.</p>
-          </div>
-          <div class="photo-spread space-layout reveal" style="--delay:190ms">
-            <div class="asset-slot hero"><span class="asset-label">[ASSET NEEDED]<br>Space · hero photograph</span></div>
-            <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Space · detail 02</span></div>
-            <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Space · detail 03</span></div>
-            <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Space · detail 04</span></div>
-          </div>
-          <div class="photo-caption-line"><span data-editable>[SERIES / LOCATION / YEAR]</span><span data-editable>[ROLE: PHOTOGRAPHY · EDITING]</span></div>
-        </div>
+      <section class="slide" aria-label="文创 视觉设计">
+        <img class="page-image" src="assets/slides/slide-11.png" alt="关于文创 Stories to Keep" draggable="false">
       </section>
-
-      <!-- Slide 12 assets: Four event photographs with clear action, relationships and public context.
-           Crops: mixed landscape and vertical. Include captions with event/date when verified. -->
-      <section class="slide light" data-title="Photography: Events and Public Memory">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Photography Column 03</span><span class="page-no">12</span></div>
-          <div class="photo-column-head">
-            <div><div class="eyebrow reveal" data-editable>Events & Public Memory</div><h2 class="reveal" style="--delay:80ms" data-editable>Finding the Moment<br>that Holds the Event<span class="cn-key">摄影：活动与公共记忆</span></h2></div>
-            <p class="reveal" style="--delay:130ms" data-editable>Event photography asks for speed and accuracy, but the lasting image often depends on a small relationship inside the larger scene.</p>
-          </div>
-          <div class="photo-spread event-layout reveal" style="--delay:190ms">
-            <div class="asset-slot hero"><span class="asset-label">[ASSET NEEDED]<br>Event · hero photograph</span></div>
-            <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Event · photograph 02</span></div>
-            <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Event · photograph 03</span></div>
-            <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Event · photograph 04</span></div>
-          </div>
-          <div class="photo-caption-line"><span data-editable>[EVENT / DATE / CONTEXT]</span><span data-editable>[ROLE: PHOTOGRAPHY · EDITING]</span></div>
-        </div>
+      <section class="slide" aria-label="人工智能交互设计">
+        <img class="page-image" src="assets/slides/slide-12.png" alt="关于 AI AI-Native Interactive Design" draggable="false">
+        <a class="interactive-hotspot game-link-label" href="https://service-453083130386.us-west2.run.app/" target="_blank" rel="noopener" aria-label="打开切霉豆腐 AI 互动游戏"></a>
+        <a class="interactive-hotspot game-link-qr" href="https://service-453083130386.us-west2.run.app/" target="_blank" rel="noopener" aria-label="扫描或点击体验切霉豆腐 AI 互动游戏"></a>
       </section>
-
-      <!-- Slide 13 assets: Exhibition key visual, contact sheet or sequencing board, layout/installation process.
-           Crops: 4:3 and landscape. Include your exact curatorial role. -->
-      <section class="slide light" data-title="Curating Being Present">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Photography · Curation</span><span class="page-no">13</span></div>
-          <div class="curation-layout">
-            <div class="curation-copy">
-              <div class="eyebrow reveal" data-editable>Exhibition Process · 在场</div>
-              <h2 class="reveal" style="--delay:80ms" data-editable>Curating<br>Being Present<span class="cn-key">策展《在场》</span></h2>
-              <p class="dek reveal" style="--delay:130ms" data-editable>Curation turned individual photographs into a shared reading path. The task moved from choosing strong images to deciding how they speak to one another.</p>
-              <div class="curation-steps reveal" style="--delay:190ms">
-                <div class="curation-step"><span>01</span><div><b data-editable>Defining the Theme</b><p data-editable>Set the question that gives the selection a reason to exist.</p></div></div>
-                <div class="curation-step"><span>02</span><div><b data-editable>Selecting Images</b><p data-editable>Choose photographs for relationship and tension, not only individual quality.</p></div></div>
-                <div class="curation-step"><span>03</span><div><b data-editable>Building a Sequence</b><p data-editable>Use scale, rhythm and visual echoes to guide the reading order.</p></div></div>
-                <div class="curation-step"><span>04</span><div><b data-editable>Translating into Space</b><p data-editable>Adapt the editorial sequence to layout, print and installation conditions.</p></div></div>
-              </div>
-              <p class="accent" data-editable>[ROLE TO CONFIRM: concept / selection / sequence / copy / layout / installation]</p>
-            </div>
-            <div class="curation-board reveal" style="--delay:170ms">
-              <div class="asset-slot hero"><span class="asset-label">[ASSET NEEDED]<br>Exhibition key visual</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Contact sheet / sequence board</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Layout / installation process</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 14 assets: Two representative WeChat/Weibo content cases with verified analytics screenshots.
-           Crops: vertical 3:4, remove private data. Preferred: 1200x1600 each. -->
-      <section class="slide light" data-title="Public Communication">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Editorial Design · Media Practice</span><span class="page-no">14</span></div>
-          <div class="contents-head" style="margin-top: 48px">
-            <h2 class="reveal" data-editable>When an Image Enters<br>Public Communication<span class="cn-key">影像与公共传播</span></h2>
-            <p class="reveal" style="--delay: 90ms" data-editable>Editorial decisions change when images must also be accurate, timely and accessible to a public audience.</p>
-          </div>
-          <div class="stats-row reveal" style="--delay: 140ms">
-            <div class="stat"><strong data-editable>50+</strong><span data-editable>WeChat publications supplied with photographs</span></div>
-            <div class="stat"><strong data-editable>60,000+</strong><span data-editable>Peak views on one post</span></div>
-            <div class="stat"><strong data-editable>9</strong><span data-editable>Posts exceeding 10,000 views</span></div>
-            <div class="stat"><strong data-editable>200+</strong><span data-editable>Photographs for Weibo columns</span></div>
-          </div>
-          <div class="media-cases reveal" style="--delay: 200ms">
-            <div class="media-case">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Representative public event case</span></div>
-              <div class="media-copy"><div class="eyebrow">Case A</div><h3 data-editable>Public Event</h3><p data-editable>Balance speed, accuracy and information completeness while identifying one visual moment that can hold attention.</p><p class="micro" data-editable>[ADD: title, date, your role and verified result]</p></div>
-            </div>
-            <div class="media-case">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Representative campus-life case</span></div>
-              <div class="media-copy"><div class="eyebrow">Case B</div><h3 data-editable>Everyday Campus Life</h3><p data-editable>Use detail, proximity and visual rhythm to make ordinary campus experiences feel specific and worth remembering.</p><p class="micro" data-editable>[ADD: title, date, your role and verified result]</p></div>
-            </div>
-          </div>
-          <div class="micro" style="position:absolute;right:92px;bottom:42px" data-editable>* All publication metrics require source screenshots before submission.</div>
-        </div>
-      </section>
-
-      <!-- Slide 15 assets: Two representative WeChat posts, workflow evidence and analytics screenshots.
-           Crops: vertical 3:4 or long-page detail. Remove private account information. -->
-      <section class="slide light" data-title="WeChat Production">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Public Communication · Production</span><span class="page-no">15</span></div>
-          <div class="wechat-layout">
-            <div class="wechat-copy">
-              <div class="eyebrow reveal" data-editable>WeChat · Editorial Workflow</div>
-              <h2 class="reveal" style="--delay:80ms" data-editable>From Editorial Brief<br>to Published Post<span class="cn-key">公众号内容生产</span></h2>
-              <p class="dek reveal" style="--delay:130ms" data-editable>A public post is a coordinated content product. Topic, image selection, cover, layout and publication timing must work as one reading experience.</p>
-              <div class="production-chain reveal" style="--delay:190ms">
-                <div class="chain-item"><span>01</span><div><b data-editable>Topic & Brief</b><p data-editable>Clarify audience, purpose and the central information.</p></div></div>
-                <div class="chain-item"><span>02</span><div><b data-editable>Visual Selection</b><p data-editable>Choose images that carry both evidence and emotion.</p></div></div>
-                <div class="chain-item"><span>03</span><div><b data-editable>Cover & Layout</b><p data-editable>Design the entry point and reading rhythm.</p></div></div>
-                <div class="chain-item"><span>04</span><div><b data-editable>Publication & Feedback</b><p data-editable>Verify details, publish and review audience response.</p></div></div>
-              </div>
-              <p class="accent" data-editable>[ROLE TO CONFIRM: photography / copy / cover / layout / publication]</p>
-            </div>
-            <div class="wechat-evidence reveal" style="--delay:170ms">
-              <article><div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Representative WeChat case 01</span></div><p data-editable>[TITLE · DATE · ROLE · VERIFIED RESULT]</p></article>
-              <article><div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Representative WeChat case 02</span></div><p data-editable>[TITLE · DATE · ROLE · VERIFIED RESULT]</p></article>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 16 assets: Six original posters or post-cover designs with project/year/role labels.
-           Crops: preserve original aspect ratios; use clean exports rather than phone screenshots. -->
-      <section class="slide light" data-title="Posters and Post Covers">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Editorial Design · Visual Archive</span><span class="page-no">16</span></div>
-          <div class="works-head">
-            <h2 class="reveal" data-editable>Posters<br>& Post Covers<span class="cn-key">海报与推文封面</span></h2>
-            <p class="reveal" style="--delay:90ms" data-editable>A visual archive of how different subjects, audiences and publishing moments required different entry points.</p>
-          </div>
-          <div class="cover-gallery reveal" style="--delay:160ms">
-            <article class="cover-item"><div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Poster / cover 01</span></div><p data-editable>[PROJECT · YEAR · ROLE]</p></article>
-            <article class="cover-item"><div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Poster / cover 02</span></div><p data-editable>[PROJECT · YEAR · ROLE]</p></article>
-            <article class="cover-item"><div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Poster / cover 03</span></div><p data-editable>[PROJECT · YEAR · ROLE]</p></article>
-            <article class="cover-item"><div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Poster / cover 04</span></div><p data-editable>[PROJECT · YEAR · ROLE]</p></article>
-            <article class="cover-item"><div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Poster / cover 05</span></div><p data-editable>[PROJECT · YEAR · ROLE]</p></article>
-            <article class="cover-item"><div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Poster / cover 06</span></div><p data-editable>[PROJECT · YEAR · ROLE]</p></article>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 17 assets: Two complete cover cases with final cover, source material and process comparison.
-           Crops: vertical 3:4 final cover plus landscape process evidence. -->
-      <section class="slide light" data-title="Editorial Cover Systems">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Editorial Design · Case Studies</span><span class="page-no">17</span></div>
-          <div class="contents-head" style="margin-top:48px">
-            <h2 class="reveal" data-editable>Designing an Entry Point<span class="cn-key">封面视觉系统</span></h2>
-            <p class="reveal" style="--delay:90ms" data-editable>A cover must frame the topic before the first sentence is read. These cases show how image, typography and copy were aligned into one editorial signal.</p>
-          </div>
-          <div class="cover-systems reveal" style="--delay:160ms">
-            <article class="cover-system">
-              <div class="asset-slot hero"><span class="asset-label">[ASSET NEEDED]<br>Final cover · case 01</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Source material / iterations</span></div>
-              <div class="system-note"><div class="eyebrow">Cover Case 01</div><h3 data-editable>[PROJECT TITLE]</h3><p><b data-editable>Editorial Decision</b><span data-editable>[WHAT NEEDED TO BE UNDERSTOOD FIRST]</span></p><p><b data-editable>My Role</b><span data-editable>[ROLE TO CONFIRM]</span></p></div>
-            </article>
-            <article class="cover-system">
-              <div class="asset-slot hero"><span class="asset-label">[ASSET NEEDED]<br>Final cover · case 02</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Source material / iterations</span></div>
-              <div class="system-note"><div class="eyebrow">Cover Case 02</div><h3 data-editable>[PROJECT TITLE]</h3><p><b data-editable>Editorial Decision</b><span data-editable>[WHAT NEEDED TO BE UNDERSTOOD FIRST]</span></p><p><b data-editable>My Role</b><span data-editable>[ROLE TO CONFIRM]</span></p></div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 18 assets: Three project decks, each represented by 2-3 strongest pages or one spread.
-           Crops: landscape 16:9. Export directly from source decks at 1920x1080 or higher. -->
-      <section class="slide light" data-title="Project Presentation Design">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Presentation Design · Selected Work</span><span class="page-no">18</span></div>
-          <div class="video-head">
-            <div><div class="eyebrow reveal" data-editable>Structure · Evidence · Visual Rhythm</div><h2 class="reveal" style="--delay:80ms" data-editable>Project Presentation<br>Design<span class="cn-key">项目 PPT 设计</span></h2></div>
-            <p class="reveal" style="--delay:130ms" data-editable>Presentation design is treated as editorial structure: deciding what the audience should understand first, what evidence needs emphasis and how the argument should progress.</p>
-          </div>
-          <div class="deck-gallery reveal" style="--delay:190ms">
-            <article class="deck-card"><div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Project deck 01 · selected spread</span></div><div><b data-editable>[PROJECT DECK 01]</b><span data-editable>[YEAR · ROLE · PURPOSE]</span></div></article>
-            <article class="deck-card"><div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Project deck 02 · selected spread</span></div><div><b data-editable>[PROJECT DECK 02]</b><span data-editable>[YEAR · ROLE · PURPOSE]</span></div></article>
-            <article class="deck-card"><div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Project deck 03 · selected spread</span></div><div><b data-editable>[PROJECT DECK 03]</b><span data-editable>[YEAR · ROLE · PURPOSE]</span></div></article>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 19 assets: One rough content architecture and one before/after or final slide sequence.
-           Crops: landscape 16:9. Keep annotations large enough for PDF reading. -->
-      <section class="slide light" data-title="From Content to Deck">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Presentation Design · Process</span><span class="page-no">19</span></div>
-          <div class="deck-process-layout">
-            <div>
-              <div class="eyebrow reveal" data-editable>Editorial Thinking in Slides</div>
-              <h2 class="reveal" style="--delay:80ms" data-editable>From Content<br>to Deck<span class="cn-key">从内容到演示</span></h2>
-              <div class="deck-process-steps reveal" style="--delay:150ms">
-                <div class="deck-process-step"><span>01</span><div><b data-editable>Clarify the Argument</b><p data-editable>Reduce material to one central question and a sequence of supporting claims.</p></div></div>
-                <div class="deck-process-step"><span>02</span><div><b data-editable>Build Hierarchy</b><p data-editable>Separate what must be read, scanned and remembered.</p></div></div>
-                <div class="deck-process-step"><span>03</span><div><b data-editable>Translate Evidence</b><p data-editable>Turn tables, screenshots and research into visual proof.</p></div></div>
-                <div class="deck-process-step"><span>04</span><div><b data-editable>Design the Reading Rhythm</b><p data-editable>Use pacing and contrast to help the argument unfold.</p></div></div>
-              </div>
-            </div>
-            <div class="before-after reveal" style="--delay:180ms">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Rough content architecture / storyboard</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Final slide spread / before-after</span></div>
-              <p data-editable>Good presentation design does not decorate an argument. It makes the argument easier to enter.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 20 assets: Research brief, team photo, route map or experience journey, key comparison.
-           Main route map: 16:10. Preferred: vector/PDF export or 1800px wide. -->
-      <section class="slide light" data-title="Designing Experience across Cultures">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Cross-cultural Research</span><span class="page-no">20</span></div>
-          <div class="cross-layout">
-            <div class="cross-copy">
-              <div class="eyebrow reveal" data-editable>Sino-Russian Business Tourism Study</div>
-              <h2 class="reveal" style="--delay: 80ms" data-editable>Designing Experience<br>across Cultures<span class="cn-key">中俄跨文化体验</span></h2>
-              <p class="question reveal" style="--delay: 140ms" data-editable>Why can the same itinerary carry different priorities for Chinese and Russian participants?</p>
-              <p class="dek reveal" style="--delay: 190ms" data-editable>Language was the working tool. The deeper task was to understand how different teams defined value, pace and participation in a travel experience.</p>
-              <div class="cross-meta reveal" style="--delay: 250ms">
-                <div><b>Methods</b><span data-editable>[RESEARCH METHOD TO CONFIRM]</span></div>
-                <div><b>Team</b><span data-editable>[TEAM CONTEXT TO CONFIRM]</span></div>
-                <div><b>My Role</b><span class="accent" data-editable>[ROLE TO CONFIRM]</span></div>
-                <div><b>Output</b><span data-editable>[ROUTE / EXPERIENCE PROPOSAL]</span></div>
-              </div>
-            </div>
-            <div class="route-board reveal" style="--delay: 170ms">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Route map / experience journey</span></div>
-              <div class="priority-strip">
-                <div class="priority"><b data-editable>Chinese team</b><p data-editable>[INSIGHT TO CONFIRM]</p></div>
-                <div class="priority"><b data-editable>Russian team</b><p data-editable>[INSIGHT TO CONFIRM]</p></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 21 assets: Brand key visual, brochure spread, product/scent system, one application scene.
-           Hero crop: vertical 4:5. Supporting crops: 4:3 and 16:9. Preferred: 1800px. -->
-      <section class="slide light" data-title="Fengsong Muying">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Cultural Product Concept</span><span class="page-no">21</span></div>
-          <div class="brand-layout">
-            <div class="brand-copy">
-              <div class="project-tag">Brand Concept Proposal</div>
-              <h2 class="reveal" data-editable>Fengsong Muying<br><span class="cn accent">风颂牧影</span></h2>
-              <p class="question reveal" style="--delay: 90ms" data-editable>Can grassland culture be experienced beyond the visual?</p>
-              <p class="dek reveal" style="--delay: 150ms" data-editable>The proposal treats scent as a narrative medium: a way to translate landscape, memory and everyday rituals into a product experience.</p>
-              <div class="brand-role reveal" style="--delay: 210ms"><div class="eyebrow">My Contribution</div><p class="accent" style="margin-top:8px;font-size:19px" data-editable>[ROLE TO CONFIRM: concept / naming / visual identity / brochure / presentation]</p></div>
-            </div>
-            <div class="brand-board reveal" style="--delay: 150ms">
-              <div class="asset-slot hero"><span class="asset-label">[ASSET NEEDED]<br>Brand hero visual / brochure cover</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Product system</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Brochure spread</span></div>
-            </div>
-          </div>
-          <div class="scent-stories reveal" style="--delay: 270ms">
-            <div class="scent"><b>Scent Story 01</b><span data-editable>[NAME + CULTURAL REFERENCE]</span></div>
-            <div class="scent"><b>Scent Story 02</b><span data-editable>[NAME + CULTURAL REFERENCE]</span></div>
-            <div class="scent"><b>Scent Story 03</b><span data-editable>[NAME + CULTURAL REFERENCE]</span></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 22 assets: One representative image each for Moldy Tofu Ninja, Zhiliang Yunshu and prompt/iteration archive.
-           Crops: main project 4:5; supporting evidence 4:3. Use real process captures only. -->
-      <section class="slide light" data-title="AI Practice Map">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">AI Practice · Overview</span><span class="page-no">22</span></div>
-          <div class="ai-map-layout">
-            <div class="ai-map-copy">
-              <div class="eyebrow reveal" data-editable>Concept · Prototype · Test · Communicate</div>
-              <h2 class="reveal" style="--delay:80ms" data-editable>AI as a Creative<br>Working Partner<span class="cn-key">AI 创作实践</span></h2>
-              <p class="dek reveal" style="--delay:130ms" data-editable>My AI practice is not a single software skill. It moves between concept development, interaction, rapid prototyping, testing and communication.</p>
-              <div class="ai-principles reveal" style="--delay:190ms">
-                <div class="ai-principle"><span>01</span><div><b data-editable>Start from a Human Question</b><p data-editable>Use AI after the cultural, emotional or user problem has been framed.</p></div></div>
-                <div class="ai-principle"><span>02</span><div><b data-editable>Make the Idea Testable</b><p data-editable>Move beyond a concept statement into a playable or visible prototype.</p></div></div>
-                <div class="ai-principle"><span>03</span><div><b data-editable>Keep Authorship Visible</b><p data-editable>Name both the tool and the decisions I can verify as my own.</p></div></div>
-              </div>
-            </div>
-            <div class="ai-project-map reveal" style="--delay:170ms">
-              <div class="asset-slot tall"><span class="asset-label">[ASSET NEEDED]<br>Moldy Tofu Ninja · prototype</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Zhiliang Yunshu · product concept</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Prompt / iteration archive</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 23 assets: Playable prototype screenshots, iteration comparison and QR code.
-           Main game crop: vertical 9:16 or 3:4. Supporting process crop: 16:10. -->
-      <section class="slide dark" data-title="From Metaphor to Interaction">
-        <div class="cinema-frame"></div>
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">AI Practice · Playable Prototype</span><span class="page-no">23</span></div>
-          <div class="prototype-grid">
-            <div class="prototype-primary">
-              <div class="asset-slot game-frame reveal-scale"><span class="asset-label">[ASSET NEEDED]<br>Playable prototype screen + QR code</span></div>
-              <div class="prototype-copy">
-                <div class="eyebrow reveal" data-editable>AI-assisted Playable Prototype</div>
-                <h2 class="reveal" style="--delay: 80ms" data-editable>From Metaphor<br>to Interaction<span class="cn">霉豆腐忍者</span></h2>
-                <p class="dek reveal" style="--delay: 150ms" data-editable>Using the wordplay between "霉" and bad luck, the prototype turns anxiety, overthinking and unanswered messages into objects that can be cut away.</p>
-                <div class="role-list reveal" style="--delay: 210ms">
-                  <span data-editable>Concept development · [CONFIRM]</span>
-                  <span data-editable>Interaction design · [CONFIRM]</span>
-                  <span data-editable>Prompt iteration & testing · [CONFIRM]</span>
-                  <span data-editable>Deployment · [CONFIRM]</span>
-                </div>
-                <div class="disclosure" data-editable>Built with AI-assisted coding tools. Authorship must describe Stella's verified contribution.</div>
-              </div>
-            </div>
-            <aside class="prototype-aside reveal" style="--delay: 180ms">
-              <div class="project-tag" style="border-color:var(--rose);color:var(--rose)">Playable Evidence</div>
-              <h3 data-editable>Iteration<br>& Testing</h3>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Interaction flow / iteration comparison</span></div>
-              <p data-editable>Show what changed after testing: rules, visual feedback, difficulty, interaction clarity or deployment. Replace this note with verified observations and version evidence.</p>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 24 assets: User profile/function map, UI prototype and product/business flow.
-           Crops: landscape 16:10. Clearly separate completed work from planned technology. -->
-      <section class="slide light" data-title="Zhiliang Yunshu">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">AI Practice · Team Product Concept</span><span class="page-no">24</span></div>
-          <div class="yunshu-layout">
-            <div class="yunshu-copy">
-              <div class="project-tag">Team Product Concept</div>
-              <h2 class="reveal" data-editable>Zhiliang Yunshu<br><span class="cn accent">智链云枢</span></h2>
-              <p class="dek reveal" style="--delay:90ms" data-editable>A product-concept project connecting user groups, cultural and rural scenarios, interface planning and business communication.</p>
-              <div class="status-table reveal" style="--delay:160ms">
-                <div class="status-box"><b data-editable>Completed · [VERIFY]</b><p data-editable>User profiles, function framework, UI prototype and business proposal.</p></div>
-                <div class="status-box"><b data-editable>Planned · [VERIFY]</b><p data-editable>Model fine-tuning, cultural feature extraction and automated distribution.</p></div>
-              </div>
-              <div class="research-role reveal" style="--delay:220ms"><div class="eyebrow">My Contribution</div><p class="accent" data-editable>[ROLE TO CONFIRM: user segmentation / positioning / cultural scenarios / business analysis / presentation]</p></div>
-            </div>
-            <div class="yunshu-board reveal" style="--delay:170ms">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>User profile / function map / UI prototype</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Product flow / business presentation</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 25 assets: Prompt excerpts, version comparison, testing notes and deployment evidence.
-           Crops: 4:3 or landscape. Remove confidential prompts or account information. -->
-      <section class="slide light" data-title="Working with AI">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">AI Practice · Method & Authorship</span><span class="page-no">25</span></div>
-          <div class="ai-method-layout">
-            <div class="ai-method-copy">
-              <div class="eyebrow reveal" data-editable>Process · Disclosure · Responsibility</div>
-              <h2 class="reveal" style="--delay:80ms" data-editable>Working with AI<br>without Hiding Authorship<span class="cn-key">AI 协作与作者边界</span></h2>
-              <p class="dek reveal" style="--delay:130ms" data-editable>AI can accelerate making, but it does not replace the need to frame a question, test an experience and state who made which decisions.</p>
-              <div class="ai-method-flow reveal" style="--delay:190ms">
-                <div class="ai-method-step"><span>01</span><div><b data-editable>Frame</b><p data-editable>Define the human, cultural or communication problem before prompting.</p></div></div>
-                <div class="ai-method-step"><span>02</span><div><b data-editable>Prompt & Build</b><p data-editable>Translate intent into instructions, assets and a testable prototype.</p></div></div>
-                <div class="ai-method-step"><span>03</span><div><b data-editable>Test & Revise</b><p data-editable>Review interaction, errors and audience understanding across versions.</p></div></div>
-                <div class="ai-method-step"><span>04</span><div><b data-editable>Disclose</b><p data-editable>Name the tool, process and only the contribution that can be verified.</p></div></div>
-              </div>
-              <p class="accent" data-editable>The portfolio names both the tool and the decisions I can verify as my own.</p>
-            </div>
-            <div class="before-after reveal" style="--delay:170ms">
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Prompt / build / test evidence</span></div>
-              <div class="asset-slot"><span class="asset-label">[ASSET NEEDED]<br>Version comparison / deployment proof</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 26 assets: None required. Optional small ICCI course map only after official information is verified. -->
-      <section class="slide light" data-title="From Selected Works to Future Practice">
-        <div class="slide-shell">
-          <div class="topline"><span class="section-label">Direction</span><span class="page-no">26</span></div>
-          <div class="contents-head" style="margin-top: 54px">
-            <h2 class="reveal" data-editable>From Selected Works<br>to Future Practice<span class="cn-key">未来方向与 ICCI</span></h2>
-            <p class="reveal" style="--delay: 90ms" data-editable>One page connects the portfolio to ICCI. The projects remain the primary evidence.</p>
-          </div>
-          <div class="future-layout reveal" style="--delay: 160ms">
-            <div class="future-column">
-              <h3 data-editable>What These Projects Have Taught Me</h3>
-              <div class="future-list">
-                <div class="future-item"><span class="dot"></span><p data-editable>Culture often reveals itself through everyday details rather than distant symbols.</p></div>
-                <div class="future-item"><span class="dot"></span><p data-editable>Research helps me move beyond intuition and identify what people actually value.</p></div>
-                <div class="future-item"><span class="dot"></span><p data-editable>Images and words do not merely record experience; they reorganise how it can be understood.</p></div>
-                <div class="future-item"><span class="dot"></span><p data-editable>Digital tools allow an idea to become visible, testable and open to iteration.</p></div>
-              </div>
-            </div>
-            <div class="future-column">
-              <h3 data-editable>What I Hope to Explore at ICCI</h3>
-              <div class="future-list">
-                <div class="future-item"><span class="dot"></span><p data-editable>Cultural content and product development grounded in real people and contexts.</p></div>
-                <div class="future-item"><span class="dot"></span><p data-editable>Cross-cultural communication that preserves complexity while remaining accessible.</p></div>
-                <div class="future-item"><span class="dot"></span><p data-editable>Digital storytelling and responsible AI-enabled creative practice.</p></div>
-                <div class="future-item"><span class="dot"></span><p data-editable>The complete path from cultural observation to content, product and sustainable operation.</p></div>
-              </div>
-            </div>
-          </div>
-          <p class="future-quote reveal" style="--delay: 240ms" data-editable>At ICCI, I hope to connect these practices into a more complete path - from cultural observation to content, product and sustainable operation.</p>
-        </div>
-      </section>
-
-      <!-- Slide 27 assets: One quiet original photograph with traces of people or urban space.
-           Crop: vertical 2:3 for right panel. Preferred: 1800x2700. -->
-      <section class="slide dark closing" data-title="Closing">
-        <div class="cinema-frame"></div>
-        <div class="photo-window"><div class="asset-slot" style="position:absolute;inset:44px;background:transparent"><span class="asset-label">[ASSET NEEDED]<br>Quiet closing photograph</span></div></div>
-        <div class="closing-copy">
-          <div class="eyebrow reveal" data-editable>Selected Works · 2026</div>
-          <h2 class="reveal" style="--delay: 90ms" data-editable>Selected works are also<br>selected <em>ways of seeing.</em><span class="cn-key">作品，也是观看世界的方式</span></h2>
-          <p class="reveal" style="--delay: 170ms" data-editable>I hope to keep exploring how culture is seen, understood, used and remembered.</p>
-        </div>
-        <div class="closing-contact reveal" style="--delay: 250ms"><span data-editable>[EMAIL]</span><span data-editable>[WECHAT]</span><span data-editable>[PROJECT LINKS]</span></div>
-        <div class="closing-name" data-editable>Stella Dai</div>
+      <section class="slide" aria-label="结尾">
+        <img class="page-image" src="assets/slides/slide-13.png" alt="Selected works are also selected ways of seeing" draggable="false">
       </section>
     </main>
   </div>
 
-  <!-- Outside-stage navigation and editing controls -->
-  <nav class="deck-controls" aria-label="Slide navigation">
-    <button id="prevButton" type="button" aria-label="Previous slide">‹</button>
-    <span class="counter" id="slideCounter">01 / 27</span>
-    <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
-    <button id="nextButton" type="button" aria-label="Next slide">›</button>
-    <button id="overviewButton" type="button" aria-label="Open overview" title="Overview (O)">O</button>
+  <button class="edge-nav prev" id="edgePrev" aria-label="上一页"></button>
+  <button class="edge-nav next" id="edgeNext" aria-label="下一页"></button>
+
+  <nav class="deck-controls" aria-label="幻灯片控制">
+    <button class="control-button" id="prevButton" aria-label="上一页">&#8249;</button>
+    <span class="counter" id="counter">01 / 13</span>
+    <button class="control-button" id="nextButton" aria-label="下一页">&#8250;</button>
+    <button class="control-button" id="helpButton" aria-label="操作帮助">?</button>
   </nav>
 
-  <div class="edit-hotzone" title="Edit mode"></div>
-  <button class="edit-toggle" id="editToggle" type="button" title="Edit mode (E)">E</button>
-  <div class="edit-panel" id="editPanel">
-    <button id="saveEdits" type="button">Save</button>
-    <button id="downloadHtml" type="button">Download HTML</button>
-    <button id="resetEdits" type="button">Reset</button>
+  <div class="progress-track" aria-hidden="true">
+    <div class="progress-bar" id="progressBar"></div>
   </div>
 
-  <aside class="overview" id="overview" aria-label="Slide overview">
-    <h2>Portfolio Overview</h2>
-    <div class="overview-grid" id="overviewGrid"></div>
+  <aside class="help-panel" id="helpPanel" aria-label="操作帮助">
+    <strong>Portfolio Navigation</strong>
+    <p>方向键 / 空格：翻页</p>
+    <p>Home / End：首尾页</p>
+    <p>鼠标滚轮或手机左右滑动：翻页</p>
+    <p>按 H：显示或隐藏本说明</p>
   </aside>
 
   <script>
     /* ===========================================
-       SLIDE PRESENTATION CONTROLLER
-       Keyboard: arrows, space, Page Up/Down, Home/End.
-       Touch: horizontal swipe. Wheel: one slide per gesture.
+       FIXED-STAGE PRESENTATION CONTROLLER
        =========================================== */
     class SlidePresentation {
       constructor() {
-        this.slides = [...document.querySelectorAll('.slide')];
-        this.currentSlide = 0;
         this.stage = document.getElementById('deckStage');
-        this.counter = document.getElementById('slideCounter');
-        this.progress = document.getElementById('progressBar');
-        this.overview = document.getElementById('overview');
+        this.slides = [...document.querySelectorAll('.slide')];
+        this.currentSlide = this.readHash();
+        this.counter = document.getElementById('counter');
+        this.progressBar = document.getElementById('progressBar');
+        this.helpPanel = document.getElementById('helpPanel');
         this.wheelLocked = false;
         this.touchStartX = 0;
         this.touchStartY = 0;
+
         this.setupStageScale();
         this.setupControls();
         this.setupKeyboardNav();
         this.setupTouchNav();
         this.setupWheelNav();
-        this.buildOverview();
-        const hashSlide = Number(new URLSearchParams(location.hash.replace('#', '')).get('slide'));
-        this.showSlide(Number.isFinite(hashSlide) && hashSlide > 0 ? hashSlide - 1 : 0);
+        this.setupHashNav();
+        this.showSlide(this.currentSlide, false);
+        this.preloadImages();
+      }
+
+      readHash() {
+        const match = window.location.hash.match(/slide=(\d+)/);
+        const index = match ? Number(match[1]) - 1 : 0;
+        return Math.max(0, Math.min(index, 12));
       }
 
       setupStageScale() {
-        const scale = () => {
+        const scaleStage = () => {
           const factor = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
           const x = (window.innerWidth - 1920 * factor) / 2;
           const y = (window.innerHeight - 1080 * factor) / 2;
           this.stage.style.transform = `translate(${x}px, ${y}px) scale(${factor})`;
         };
-        scale();
-        window.addEventListener('resize', scale);
+        scaleStage();
+        window.addEventListener('resize', scaleStage, { passive: true });
       }
 
       setupControls() {
-        document.getElementById('prevButton').addEventListener('click', () => this.previous());
-        document.getElementById('nextButton').addEventListener('click', () => this.next());
-        document.getElementById('overviewButton').addEventListener('click', () => this.toggleOverview());
+        const prev = () => this.showSlide(this.currentSlide - 1);
+        const next = () => this.showSlide(this.currentSlide + 1);
+        document.getElementById('prevButton').addEventListener('click', prev);
+        document.getElementById('nextButton').addEventListener('click', next);
+        document.getElementById('edgePrev').addEventListener('click', prev);
+        document.getElementById('edgeNext').addEventListener('click', next);
+        document.getElementById('helpButton').addEventListener('click', () => this.toggleHelp());
       }
 
       setupKeyboardNav() {
         document.addEventListener('keydown', (event) => {
-          if (document.body.classList.contains('editing') && event.target.closest('[contenteditable="true"]')) return;
-          if (event.key === 'o' || event.key === 'O') {
+          if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(event.key)) {
             event.preventDefault();
-            this.toggleOverview();
-            return;
-          }
-          if (this.overview.classList.contains('open')) {
-            if (event.key === 'Escape') this.toggleOverview(false);
-            return;
-          }
-          if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].includes(event.key)) {
+            this.showSlide(this.currentSlide + 1);
+          } else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key)) {
             event.preventDefault();
-            this.next();
-          }
-          if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key)) {
+            this.showSlide(this.currentSlide - 1);
+          } else if (event.key === 'Home') {
             event.preventDefault();
-            this.previous();
+            this.showSlide(0);
+          } else if (event.key === 'End') {
+            event.preventDefault();
+            this.showSlide(this.slides.length - 1);
+          } else if (event.key.toLowerCase() === 'h') {
+            this.toggleHelp();
+          } else if (event.key === 'Escape') {
+            this.helpPanel.classList.remove('show');
           }
-          if (event.key === 'Home') this.showSlide(0);
-          if (event.key === 'End') this.showSlide(this.slides.length - 1);
         });
       }
 
       setupTouchNav() {
         document.addEventListener('touchstart', (event) => {
-          this.touchStartX = event.changedTouches[0].clientX;
-          this.touchStartY = event.changedTouches[0].clientY;
+          const touch = event.changedTouches[0];
+          this.touchStartX = touch.clientX;
+          this.touchStartY = touch.clientY;
         }, { passive: true });
+
         document.addEventListener('touchend', (event) => {
-          const dx = event.changedTouches[0].clientX - this.touchStartX;
-          const dy = event.changedTouches[0].clientY - this.touchStartY;
-          if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) dx < 0 ? this.next() : this.previous();
+          const touch = event.changedTouches[0];
+          const dx = touch.clientX - this.touchStartX;
+          const dy = touch.clientY - this.touchStartY;
+          if (Math.abs(dx) > 54 && Math.abs(dx) > Math.abs(dy)) {
+            this.showSlide(this.currentSlide + (dx < 0 ? 1 : -1));
+          }
         }, { passive: true });
       }
 
       setupWheelNav() {
         document.addEventListener('wheel', (event) => {
-          if (this.wheelLocked || this.overview.classList.contains('open') || Math.abs(event.deltaY) < 20) return;
+          if (this.wheelLocked || Math.abs(event.deltaY) < 18) return;
           this.wheelLocked = true;
-          event.deltaY > 0 ? this.next() : this.previous();
-          setTimeout(() => { this.wheelLocked = false; }, 620);
+          this.showSlide(this.currentSlide + (event.deltaY > 0 ? 1 : -1));
+          window.setTimeout(() => { this.wheelLocked = false; }, 620);
         }, { passive: true });
       }
 
-      buildOverview() {
-        const grid = document.getElementById('overviewGrid');
-        this.slides.forEach((slide, index) => {
-          const button = document.createElement('button');
-          button.className = 'overview-item';
-          button.innerHTML = `<span>${String(index + 1).padStart(2, '0')}</span><b>${slide.dataset.title}</b>`;
-          button.addEventListener('click', () => {
-            this.showSlide(index);
-            this.toggleOverview(false);
-          });
-          grid.appendChild(button);
+      setupHashNav() {
+        window.addEventListener('hashchange', () => {
+          const target = this.readHash();
+          if (target !== this.currentSlide) this.showSlide(target, false);
         });
       }
 
-      toggleOverview(force) {
-        const open = typeof force === 'boolean' ? force : !this.overview.classList.contains('open');
-        this.overview.classList.toggle('open', open);
-      }
-
-      showSlide(index) {
-        this.currentSlide = Math.max(0, Math.min(index, this.slides.length - 1));
+      showSlide(index, updateHash = true) {
+        const nextIndex = Math.max(0, Math.min(index, this.slides.length - 1));
+        this.currentSlide = nextIndex;
         this.slides.forEach((slide, slideIndex) => {
-          const isCurrent = slideIndex === this.currentSlide;
+          const isCurrent = slideIndex === nextIndex;
           slide.classList.toggle('active', isCurrent);
           slide.classList.toggle('visible', isCurrent);
-          slide.setAttribute('aria-hidden', String(!isCurrent));
         });
-        const current = String(this.currentSlide + 1).padStart(2, '0');
+
+        const current = String(nextIndex + 1).padStart(2, '0');
         const total = String(this.slides.length).padStart(2, '0');
         this.counter.textContent = `${current} / ${total}`;
-        this.progress.style.width = `${((this.currentSlide + 1) / this.slides.length) * 100}%`;
-        history.replaceState(null, '', `#slide=${this.currentSlide + 1}`);
-      }
+        this.progressBar.style.width = `${((nextIndex + 1) / this.slides.length) * 100}%`;
+        document.title = `Stella Dai - Portfolio 2026 (${nextIndex + 1}/${this.slides.length})`;
 
-      next() { this.showSlide(this.currentSlide + 1); }
-      previous() { this.showSlide(this.currentSlide - 1); }
-    }
-
-    /* ===========================================
-       INLINE EDITOR
-       Press E or use the top-left hotzone. Ctrl+S saves locally.
-       =========================================== */
-    class DeckEditor {
-      constructor() {
-        this.isActive = false;
-        this.storageKey = 'stella-icci-portfolio-edits-v3';
-        this.editables = [...document.querySelectorAll('[data-editable]')];
-        this.editables.forEach((element, index) => { element.dataset.editId = `editable-${index}`; });
-        this.restore();
-        this.setupControls();
-      }
-
-      setupControls() {
-        const hotzone = document.querySelector('.edit-hotzone');
-        const toggle = document.getElementById('editToggle');
-        let hideTimeout = null;
-
-        toggle.addEventListener('click', () => this.toggleEditMode());
-        hotzone.addEventListener('mouseenter', () => {
-          clearTimeout(hideTimeout);
-          toggle.classList.add('show');
-        });
-        hotzone.addEventListener('mouseleave', () => {
-          hideTimeout = setTimeout(() => {
-            if (!this.isActive) toggle.classList.remove('show');
-          }, 400);
-        });
-        toggle.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
-        toggle.addEventListener('mouseleave', () => {
-          hideTimeout = setTimeout(() => {
-            if (!this.isActive) toggle.classList.remove('show');
-          }, 400);
-        });
-        hotzone.addEventListener('click', () => this.toggleEditMode());
-        document.getElementById('saveEdits').addEventListener('click', () => this.save());
-        document.getElementById('downloadHtml').addEventListener('click', () => this.download());
-        document.getElementById('resetEdits').addEventListener('click', () => this.reset());
-        document.addEventListener('keydown', (event) => {
-          if ((event.key === 'e' || event.key === 'E') && !event.target.closest('[contenteditable="true"]')) this.toggleEditMode();
-          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
-            event.preventDefault();
-            this.save();
-          }
-        });
-      }
-
-      toggleEditMode() {
-        this.isActive = !this.isActive;
-        document.body.classList.toggle('editing', this.isActive);
-        const toggle = document.getElementById('editToggle');
-        toggle.classList.toggle('active', this.isActive);
-        toggle.textContent = this.isActive ? 'X' : 'E';
-        this.editables.forEach((element) => element.setAttribute('contenteditable', String(this.isActive)));
-      }
-
-      save() {
-        const edits = {};
-        this.editables.forEach((element) => { edits[element.dataset.editId] = element.innerHTML; });
-        localStorage.setItem(this.storageKey, JSON.stringify(edits));
-      }
-
-      restore() {
-        const stored = localStorage.getItem(this.storageKey);
-        if (!stored) return;
-        try {
-          const edits = JSON.parse(stored);
-          this.editables.forEach((element) => {
-            if (Object.prototype.hasOwnProperty.call(edits, element.dataset.editId)) element.innerHTML = edits[element.dataset.editId];
-          });
-        } catch (error) {
-          console.warn('Could not restore saved edits.', error);
+        if (updateHash) {
+          history.replaceState(null, '', `#slide=${nextIndex + 1}`);
         }
       }
 
-      download() {
-        const wasActive = this.isActive;
-        if (wasActive) this.toggleEditMode();
-        const html = '<!doctype html>\n' + document.documentElement.outerHTML;
-        const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'stella-dai-selected-works.html';
-        link.click();
-        URL.revokeObjectURL(url);
-        if (wasActive) this.toggleEditMode();
+      toggleHelp() {
+        this.helpPanel.classList.toggle('show');
       }
 
-      reset() {
-        if (!confirm('Reset all locally saved text edits?')) return;
-        localStorage.removeItem(this.storageKey);
-        location.reload();
+      preloadImages() {
+        const images = [...document.querySelectorAll('.page-image')];
+        Promise.all(images.map((image) => {
+          if (image.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            image.addEventListener('load', resolve, { once: true });
+            image.addEventListener('error', resolve, { once: true });
+          });
+        })).then(() => {
+          document.getElementById('loading').classList.add('done');
+        });
+
+        window.setTimeout(() => {
+          document.getElementById('loading').classList.add('done');
+        }, 4500);
       }
     }
 
-    window.presentation = new SlidePresentation();
-    window.editor = new DeckEditor();
+    new SlidePresentation();
   </script>
 </body>
 </html>
