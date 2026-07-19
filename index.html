@@ -75,7 +75,8 @@
       opacity: 0;
       pointer-events: none;
       background: var(--slide-bg, #fff);
-      transition: opacity 420ms ease;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
     }
 
     .slide.active,
@@ -85,6 +86,64 @@
       pointer-events: auto;
       z-index: 1;
     }
+
+    .slide.transitioning {
+      visibility: visible;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    .slide.entering { z-index: 3; }
+    .slide.leaving { z-index: 2; }
+
+    .slide.enter-next {
+      animation: enter-next 540ms var(--ease) both;
+      box-shadow: -30px 0 54px rgba(36, 10, 19, 0.2);
+    }
+
+    .slide.leave-next {
+      animation: leave-next 540ms var(--ease) both;
+    }
+
+    .slide.enter-prev {
+      animation: enter-prev 540ms var(--ease) both;
+      box-shadow: 30px 0 54px rgba(36, 10, 19, 0.2);
+    }
+
+    .slide.leave-prev {
+      animation: leave-prev 540ms var(--ease) both;
+    }
+
+    @keyframes enter-next {
+      from { opacity: 0.98; transform: translate3d(150px, 0, 0) scale(0.986); }
+      to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    }
+
+    @keyframes leave-next {
+      from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      to { opacity: 0.9; transform: translate3d(-105px, 0, 0) scale(0.992); }
+    }
+
+    @keyframes enter-prev {
+      from { opacity: 0.98; transform: translate3d(-150px, 0, 0) scale(0.986); }
+      to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    }
+
+    @keyframes leave-prev {
+      from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      to { opacity: 0.9; transform: translate3d(105px, 0, 0) scale(0.992); }
+    }
+
+    .slide.dragging {
+      animation: none !important;
+      transition: none;
+    }
+
+    .slide.dragging.active {
+      z-index: 3;
+      box-shadow: 0 0 58px rgba(36, 10, 19, 0.22);
+    }
+    .slide.drag-preview { z-index: 2; }
 
     img,
     video,
@@ -173,17 +232,6 @@
       object-fit: fill;
       user-select: none;
       -webkit-user-drag: none;
-      transform: scale(1.004);
-      opacity: 0.96;
-      transition:
-        transform 760ms var(--ease),
-        opacity 500ms ease;
-      will-change: transform, opacity;
-    }
-
-    .slide.visible .page-image {
-      transform: scale(1);
-      opacity: 1;
     }
 
     .interactive-hotspot {
@@ -459,8 +507,10 @@
         this.progressBar = document.getElementById('progressBar');
         this.helpPanel = document.getElementById('helpPanel');
         this.wheelLocked = false;
-        this.touchStartX = 0;
-        this.touchStartY = 0;
+        this.isAnimating = false;
+        this.stageScale = 1;
+        this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.touch = this.emptyTouchState();
 
         this.setupStageScale();
         this.setupControls();
@@ -468,8 +518,20 @@
         this.setupTouchNav();
         this.setupWheelNav();
         this.setupHashNav();
-        this.showSlide(this.currentSlide, false);
+        this.renderInstant(this.currentSlide, false);
         this.preloadImages();
+      }
+
+      emptyTouchState() {
+        return {
+          tracking: false,
+          horizontal: false,
+          startX: 0,
+          startY: 0,
+          dx: 0,
+          targetIndex: -1,
+          direction: 0
+        };
       }
 
       readHash() {
@@ -481,6 +543,7 @@
       setupStageScale() {
         const scaleStage = () => {
           const factor = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+          this.stageScale = factor;
           const x = (window.innerWidth - 1920 * factor) / 2;
           const y = (window.innerHeight - 1080 * factor) / 2;
           this.stage.style.transform = `translate(${x}px, ${y}px) scale(${factor})`;
@@ -523,19 +586,129 @@
 
       setupTouchNav() {
         document.addEventListener('touchstart', (event) => {
-          const touch = event.changedTouches[0];
-          this.touchStartX = touch.clientX;
-          this.touchStartY = touch.clientY;
+          if (this.isAnimating || event.touches.length !== 1) return;
+          if (event.target instanceof Element && event.target.closest('a, button')) return;
+          const touch = event.touches[0];
+          this.touch = {
+            tracking: true,
+            horizontal: false,
+            startX: touch.clientX,
+            startY: touch.clientY,
+            dx: 0,
+            targetIndex: -1,
+            direction: 0
+          };
         }, { passive: true });
 
-        document.addEventListener('touchend', (event) => {
-          const touch = event.changedTouches[0];
-          const dx = touch.clientX - this.touchStartX;
-          const dy = touch.clientY - this.touchStartY;
-          if (Math.abs(dx) > 54 && Math.abs(dx) > Math.abs(dy)) {
-            this.showSlide(this.currentSlide + (dx < 0 ? 1 : -1));
+        document.addEventListener('touchmove', (event) => {
+          if (!this.touch.tracking || event.touches.length !== 1) return;
+          const touch = event.touches[0];
+          let dx = touch.clientX - this.touch.startX;
+          const dy = touch.clientY - this.touch.startY;
+
+          if (!this.touch.horizontal) {
+            if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+            if (Math.abs(dy) >= Math.abs(dx)) {
+              this.touch.tracking = false;
+              return;
+            }
+            this.touch.horizontal = true;
           }
+
+          event.preventDefault();
+          const direction = dx < 0 ? 1 : -1;
+          const targetIndex = this.currentSlide + direction;
+          const hasTarget = targetIndex >= 0 && targetIndex < this.slides.length;
+          if (!hasTarget) dx *= 0.24;
+
+          const authoredDx = dx / Math.max(this.stageScale, 0.01);
+          const progress = Math.min(1, Math.abs(dx) / Math.max(window.innerWidth * 0.72, 1));
+          const activeSlide = this.slides[this.currentSlide];
+
+          activeSlide.classList.add('visible', 'transitioning', 'dragging');
+          activeSlide.style.transform = `translate3d(${authoredDx}px, 0, 0) scale(${1 - progress * 0.006})`;
+          activeSlide.style.opacity = '1';
+
+          if (this.touch.targetIndex !== targetIndex) {
+            if (this.touch.targetIndex >= 0 && this.touch.targetIndex < this.slides.length) {
+              this.resetMotion(this.slides[this.touch.targetIndex], true);
+            }
+            this.touch.targetIndex = hasTarget ? targetIndex : -1;
+          }
+
+          if (hasTarget) {
+            const targetSlide = this.slides[targetIndex];
+            if (!targetSlide.classList.contains('drag-preview')) {
+              this.resetMotion(targetSlide, true);
+            }
+            targetSlide.classList.add('visible', 'transitioning', 'dragging', 'drag-preview');
+            targetSlide.style.transform = `translate3d(${authoredDx + direction * 1920}px, 0, 0) scale(1)`;
+            targetSlide.style.opacity = '1';
+          }
+
+          this.touch.dx = dx;
+          this.touch.direction = direction;
+        }, { passive: false });
+
+        document.addEventListener('touchend', () => {
+          this.finishTouchGesture(false);
         }, { passive: true });
+
+        document.addEventListener('touchcancel', () => {
+          this.finishTouchGesture(true);
+        }, { passive: true });
+      }
+
+      finishTouchGesture(forceCancel) {
+        if (!this.touch.tracking || !this.touch.horizontal) {
+          this.touch = this.emptyTouchState();
+          return;
+        }
+
+        const activeSlide = this.slides[this.currentSlide];
+        const targetIndex = this.touch.targetIndex;
+        const targetSlide = targetIndex >= 0 ? this.slides[targetIndex] : null;
+        const threshold = Math.max(54, window.innerWidth * 0.14);
+        const shouldCommit = !forceCancel && targetSlide && Math.abs(this.touch.dx) >= threshold;
+        const direction = this.touch.direction;
+        const duration = shouldCommit ? 430 : 300;
+
+        this.isAnimating = true;
+        activeSlide.style.transition = `transform ${duration}ms var(--ease), opacity ${duration}ms ease`;
+        if (targetSlide) {
+          targetSlide.style.transition = `transform ${duration}ms var(--ease), opacity ${duration}ms ease`;
+        }
+
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          activeSlide.style.transform = shouldCommit
+            ? `translate3d(${-direction * 1920}px, 0, 0) scale(0.994)`
+            : 'translate3d(0, 0, 0) scale(1)';
+          activeSlide.style.opacity = '1';
+
+          if (targetSlide) {
+            targetSlide.style.transform = shouldCommit
+              ? 'translate3d(0, 0, 0) scale(1)'
+              : `translate3d(${direction * 1920}px, 0, 0) scale(1)`;
+            targetSlide.style.opacity = '1';
+          }
+        }));
+
+        window.setTimeout(() => {
+          if (shouldCommit) {
+            this.resetMotion(activeSlide, true);
+            this.currentSlide = targetIndex;
+            this.resetMotion(targetSlide, true);
+            targetSlide.classList.add('active', 'visible');
+            this.updateChrome(targetIndex, true);
+          } else {
+            this.resetMotion(activeSlide, true);
+            activeSlide.classList.add('active', 'visible');
+            if (targetSlide) this.resetMotion(targetSlide, true);
+          }
+
+          this.touch = this.emptyTouchState();
+          this.isAnimating = false;
+        }, duration + 35);
       }
 
       setupWheelNav() {
@@ -556,21 +729,69 @@
 
       showSlide(index, updateHash = true) {
         const nextIndex = Math.max(0, Math.min(index, this.slides.length - 1));
-        this.currentSlide = nextIndex;
-        this.slides.forEach((slide, slideIndex) => {
-          const isCurrent = slideIndex === nextIndex;
-          slide.classList.toggle('active', isCurrent);
-          slide.classList.toggle('visible', isCurrent);
-        });
+        if (nextIndex === this.currentSlide) {
+          this.updateChrome(nextIndex, updateHash);
+          return;
+        }
+        if (this.isAnimating) return;
+        if (this.reducedMotion) {
+          this.renderInstant(nextIndex, updateHash);
+          return;
+        }
 
-        const current = String(nextIndex + 1).padStart(2, '0');
+        const previousIndex = this.currentSlide;
+        const outgoing = this.slides[previousIndex];
+        const incoming = this.slides[nextIndex];
+        const direction = nextIndex > previousIndex ? 'next' : 'prev';
+        this.isAnimating = true;
+
+        this.resetMotion(outgoing, false);
+        this.resetMotion(incoming, true);
+        outgoing.classList.add('active', 'visible', 'transitioning', 'leaving', `leave-${direction}`);
+        incoming.classList.add('visible', 'transitioning', 'entering', `enter-${direction}`);
+
+        this.currentSlide = nextIndex;
+        this.updateChrome(nextIndex, updateHash);
+
+        window.setTimeout(() => {
+          this.resetMotion(outgoing, true);
+          this.resetMotion(incoming, true);
+          incoming.classList.add('active', 'visible');
+          this.isAnimating = false;
+        }, 575);
+      }
+
+      renderInstant(index, updateHash = true) {
+        this.slides.forEach((slide, slideIndex) => {
+          this.resetMotion(slide, true);
+          if (slideIndex === index) slide.classList.add('active', 'visible');
+        });
+        this.currentSlide = index;
+        this.updateChrome(index, updateHash);
+      }
+
+      resetMotion(slide, removeVisibility) {
+        if (!slide) return;
+        slide.classList.remove(
+          'transitioning', 'entering', 'leaving',
+          'enter-next', 'leave-next', 'enter-prev', 'leave-prev',
+          'dragging', 'drag-preview'
+        );
+        slide.style.removeProperty('transform');
+        slide.style.removeProperty('opacity');
+        slide.style.removeProperty('transition');
+        if (removeVisibility) slide.classList.remove('active', 'visible');
+      }
+
+      updateChrome(index, updateHash) {
+        const current = String(index + 1).padStart(2, '0');
         const total = String(this.slides.length).padStart(2, '0');
         this.counter.textContent = `${current} / ${total}`;
-        this.progressBar.style.width = `${((nextIndex + 1) / this.slides.length) * 100}%`;
-        document.title = `Stella Dai - Portfolio 2026 (${nextIndex + 1}/${this.slides.length})`;
+        this.progressBar.style.width = `${((index + 1) / this.slides.length) * 100}%`;
+        document.title = `Stella Dai - Portfolio 2026 (${index + 1}/${this.slides.length})`;
 
         if (updateHash) {
-          history.replaceState(null, '', `#slide=${nextIndex + 1}`);
+          history.replaceState(null, '', `#slide=${index + 1}`);
         }
       }
 
@@ -596,7 +817,7 @@
       }
     }
 
-    new SlidePresentation();
+    window.portfolioPresentation = new SlidePresentation();
   </script>
 </body>
 </html>
